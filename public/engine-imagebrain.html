@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageBrain | VISUALX - AI Still Image Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent: #10b981;
+            --accent-light: #34d399;
+            --accent-dark: #059669;
+            --gradient-1: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --gradient-2: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* WebGL Canvas */
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Layout */
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 2rem;
+        }
+
+        .logo span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .engine-info {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .engine-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .engine-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .engine-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .engine-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Agent Team Section */
+        .agent-team {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .agent-card.active {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .agent-card.completed {
+            border-color: var(--success);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .agent-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .agent-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .agent-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .agent-status-indicator {
+            margin-left: auto;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+        }
+
+        .agent-status-indicator.working {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-light);
+        }
+
+        .agent-status-indicator.done {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            position: relative;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 48px;
+            width: 2px;
+            height: calc(100% - 24px);
+            background: var(--border);
+        }
+
+        .step.completed:not(:last-child)::after {
+            background: var(--accent);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step.active .step-number {
+            background: var(--gradient-1);
+            border-color: transparent;
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            border-color: transparent;
+        }
+
+        .step-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-content p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            margin-left: 320px;
+            padding: 2rem 3rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+        }
+
+        /* Wizard Container */
+        .wizard-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Styles */
+        .form-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .form-section-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Agent Question Cards */
+        .agent-question-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-question-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .asking-agent {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .asking-agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .asking-agent-info h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .asking-agent-info p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .question-importance {
+            margin-left: auto;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-light);
+        }
+
+        .question-importance.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .question-context {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        /* Option Cards */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .option-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .option-card.selected {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .option-card.multi-select.selected {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .option-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Range Slider */
+        .range-container {
+            padding: 1rem 0;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .range-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+        }
+
+        .range-value {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+
+        /* Tag Input */
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem;
+            min-height: 80px;
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-1);
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .tag-input {
+            flex: 1;
+            min-width: 150px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* Agent Research Animation */
+        .research-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .research-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .research-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .research-logs {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+        }
+
+        .log-agent {
+            color: var(--accent-light);
+        }
+
+        .log-message {
+            color: var(--text-primary);
+        }
+
+        /* Generated Images Grid */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .image-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .image-preview {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-info {
+            padding: 1.25rem;
+        }
+
+        .image-concept {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-rationale {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .image-action-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-action-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .image-action-btn.primary {
+            background: var(--gradient-1);
+            border: none;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+            }
+            .main {
+                margin-left: 280px;
+                padding: 1.5rem;
+            }
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">VISUAL <span>X</span></div>
+
+            <a href="/dashboard" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="engine-info">
+                <div class="engine-title">
+                    <div class="engine-icon">🎨</div>
+                    <span>ImageBrain</span>
+                </div>
+                <p class="engine-desc">
+                    AI-powered still image generation with demographic research. Our agent team analyzes your target audience to create visuals that resonate deeply.
+                </p>
+                <div class="engine-status">
+                    <div class="status-dot"></div>
+                    <span>Engine Online</span>
+                </div>
+            </div>
+
+            <!-- Agent Team -->
+            <div class="agent-team">
+                <div class="section-title">Research Agent Team</div>
+
+                <div class="agent-card" id="agent-demographic">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎯</div>
+                        <div>
+                            <div class="agent-name">Demo Scout</div>
+                            <div class="agent-role">Demographic Researcher</div>
+                        </div>
+                        <span class="agent-status-indicator" id="status-demographic">Standby</span>
+                    </div>
+                </div>
+
+                <div class="agent-card" id="agent-visual">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">👁️</div>
+                        <div>
+                            <div class="agent-name">Vision Pro</div>
+                            <div class="agent-role">Visual Strategist</div>
+                        </div>
+                        <span class="agent-status-indicator" id="status-visual">Standby</span>
+                    </div>
+                </div>
+
+                <div class="agent-card" id="agent-style">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">✨</div>
+                        <div>
+                            <div class="agent-name">Style Sage</div>
+                            <div class="agent-role">Aesthetic Director</div>
+                        </div>
+                        <span class="agent-status-indicator" id="status-style">Standby</span>
+                    </div>
+                </div>
+
+                <div class="agent-card" id="agent-prompt">
+                    <div class="agent-header">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #10b981, #06b6d4);">🔮</div>
+                        <div>
+                            <div class="agent-name">Prompt Oracle</div>
+                            <div class="agent-role">Generation Expert</div>
+                        </div>
+                        <span class="agent-status-indicator" id="status-prompt">Standby</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="section-title">Progress</div>
+
+                <div class="step active" id="step-indicator-1">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Project Setup</h4>
+                        <p>Music & basic info</p>
+                    </div>
+                </div>
+
+                <div class="step" id="step-indicator-2">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Audience Discovery</h4>
+                        <p>Target demographic</p>
+                    </div>
+                </div>
+
+                <div class="step" id="step-indicator-3">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Visual Direction</h4>
+                        <p>Style & references</p>
+                    </div>
+                </div>
+
+                <div class="step" id="step-indicator-4">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Agent Research</h4>
+                        <p>Deep analysis</p>
+                    </div>
+                </div>
+
+                <div class="step" id="step-indicator-5">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Image Generation</h4>
+                        <p>Create visuals</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="header">
+                <h1>Image<span>Brain</span></h1>
+                <p>Create stunning visuals that speak directly to your audience</p>
+            </div>
+
+            <div class="wizard-container">
+                <!-- Step 1: Project Setup -->
+                <div class="wizard-step active" id="step-1">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>🎵</span> Music Information
+                        </div>
+                        <p class="form-section-desc">Tell us about the music so our agents can analyze its essence</p>
+
+                        <div class="form-group">
+                            <label class="form-label">Song Title</label>
+                            <input type="text" class="form-input" id="songTitle" placeholder="Enter the song title">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Artist Name</label>
+                            <input type="text" class="form-input" id="artistName" placeholder="Artist or band name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Genre</label>
+                            <div class="options-grid">
+                                <div class="option-card" data-value="hiphop" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🎤</div>
+                                    <div class="option-title">Hip-Hop/Rap</div>
+                                </div>
+                                <div class="option-card" data-value="rnb" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">💜</div>
+                                    <div class="option-title">R&B/Soul</div>
+                                </div>
+                                <div class="option-card" data-value="pop" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">⭐</div>
+                                    <div class="option-title">Pop</div>
+                                </div>
+                                <div class="option-card" data-value="electronic" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🎧</div>
+                                    <div class="option-title">Electronic</div>
+                                </div>
+                                <div class="option-card" data-value="rock" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🎸</div>
+                                    <div class="option-title">Rock</div>
+                                </div>
+                                <div class="option-card" data-value="gospel" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🙏</div>
+                                    <div class="option-title">Gospel</div>
+                                </div>
+                                <div class="option-card" data-value="country" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🤠</div>
+                                    <div class="option-title">Country</div>
+                                </div>
+                                <div class="option-card" data-value="other" onclick="selectOption(this, 'genre')">
+                                    <div class="option-icon">🎼</div>
+                                    <div class="option-title">Other</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Song Description / Lyrics Theme</label>
+                            <textarea class="form-input" id="songDescription" placeholder="Describe the song's theme, message, or paste key lyrics..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Music Link (Optional)</label>
+                            <input type="url" class="form-input" id="musicLink" placeholder="Spotify, YouTube, SoundCloud, etc.">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" onclick="nextStep()">
+                            Continue to Audience Discovery
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Audience Discovery (Agent Questions) -->
+                <div class="wizard-step" id="step-2">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>🎯</span> Audience Discovery
+                        </div>
+                        <p class="form-section-desc">Our Demo Scout agent needs to understand who you're trying to reach</p>
+                    </div>
+
+                    <!-- Agent Question 1 -->
+                    <div class="agent-question-card">
+                        <div class="agent-question-header">
+                            <div class="asking-agent">
+                                <div class="asking-agent-avatar" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎯</div>
+                                <div class="asking-agent-info">
+                                    <h4>Demo Scout</h4>
+                                    <p>Demographic Researcher</p>
+                                </div>
+                            </div>
+                            <span class="question-importance critical">Critical</span>
+                        </div>
+                        <div class="question-text">Who is the primary listener of this music?</div>
+                        <div class="question-context">Understanding your core audience helps me research their visual preferences, cultural touchpoints, and what imagery resonates with them.</div>
+
+                        <div class="options-grid">
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'audience')">
+                                <div class="option-icon">🎓</div>
+                                <div class="option-title">Gen Z</div>
+                                <div class="option-desc">Ages 12-27</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'audience')">
+                                <div class="option-icon">💼</div>
+                                <div class="option-title">Millennials</div>
+                                <div class="option-desc">Ages 28-43</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'audience')">
+                                <div class="option-icon">🏠</div>
+                                <div class="option-title">Gen X</div>
+                                <div class="option-desc">Ages 44-59</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'audience')">
+                                <div class="option-icon">🌍</div>
+                                <div class="option-title">Universal</div>
+                                <div class="option-desc">All ages</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent Question 2 -->
+                    <div class="agent-question-card">
+                        <div class="agent-question-header">
+                            <div class="asking-agent">
+                                <div class="asking-agent-avatar" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎯</div>
+                                <div class="asking-agent-info">
+                                    <h4>Demo Scout</h4>
+                                    <p>Demographic Researcher</p>
+                                </div>
+                            </div>
+                            <span class="question-importance">Important</span>
+                        </div>
+                        <div class="question-text">What cultural communities does this music connect with?</div>
+                        <div class="question-context">I'll research visual trends, color preferences, and symbolic imagery that resonates with these communities.</div>
+
+                        <div class="tag-input-container" id="cultureTags">
+                            <input type="text" class="tag-input" id="cultureInput" placeholder="Type and press Enter (e.g., Urban, Southern, Coastal, International...)">
+                        </div>
+                    </div>
+
+                    <!-- Agent Question 3 -->
+                    <div class="agent-question-card">
+                        <div class="agent-question-header">
+                            <div class="asking-agent">
+                                <div class="asking-agent-avatar" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎯</div>
+                                <div class="asking-agent-info">
+                                    <h4>Demo Scout</h4>
+                                    <p>Demographic Researcher</p>
+                                </div>
+                            </div>
+                            <span class="question-importance">Important</span>
+                        </div>
+                        <div class="question-text">Where will these images be used?</div>
+                        <div class="question-context">Different platforms have different visual languages. I'll optimize my research for your target destinations.</div>
+
+                        <div class="options-grid">
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">📱</div>
+                                <div class="option-title">Instagram</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">🎵</div>
+                                <div class="option-title">TikTok</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">▶️</div>
+                                <div class="option-title">YouTube</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">🎧</div>
+                                <div class="option-title">Spotify/Apple</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">🐦</div>
+                                <div class="option-title">Twitter/X</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">📰</div>
+                                <div class="option-title">Press/PR</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">🖼️</div>
+                                <div class="option-title">Album Art</div>
+                            </div>
+                            <div class="option-card multi-select" onclick="toggleMultiSelect(this, 'platform')">
+                                <div class="option-icon">🎪</div>
+                                <div class="option-title">Live/Events</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="prevStep()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn btn-primary" onclick="nextStep()">
+                            Continue to Visual Direction
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Visual Direction -->
+                <div class="wizard-step" id="step-3">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>👁️</span> Visual Direction
+                        </div>
+                        <p class="form-section-desc">Vision Pro and Style Sage need your creative input</p>
+                    </div>
+
+                    <!-- Vision Pro Question -->
+                    <div class="agent-question-card">
+                        <div class="agent-question-header">
+                            <div class="asking-agent">
+                                <div class="asking-agent-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">👁️</div>
+                                <div class="asking-agent-info">
+                                    <h4>Vision Pro</h4>
+                                    <p>Visual Strategist</p>
+                                </div>
+                            </div>
+                            <span class="question-importance critical">Critical</span>
+                        </div>
+                        <div class="question-text">What emotional atmosphere should dominate the imagery?</div>
+                        <div class="question-context">I'll design visual concepts that embody this emotional core while appealing to your target audience.</div>
+
+                        <div class="options-grid">
+                            <div class="option-card" data-value="powerful" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">⚡</div>
+                                <div class="option-title">Powerful</div>
+                                <div class="option-desc">Bold, commanding, impactful</div>
+                            </div>
+                            <div class="option-card" data-value="intimate" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">💫</div>
+                                <div class="option-title">Intimate</div>
+                                <div class="option-desc">Personal, vulnerable, close</div>
+                            </div>
+                            <div class="option-card" data-value="euphoric" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">🌟</div>
+                                <div class="option-title">Euphoric</div>
+                                <div class="option-desc">Joyful, transcendent, uplifting</div>
+                            </div>
+                            <div class="option-card" data-value="dark" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">🌑</div>
+                                <div class="option-title">Dark/Moody</div>
+                                <div class="option-desc">Mysterious, intense, brooding</div>
+                            </div>
+                            <div class="option-card" data-value="dreamy" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">☁️</div>
+                                <div class="option-title">Dreamy</div>
+                                <div class="option-desc">Ethereal, surreal, floating</div>
+                            </div>
+                            <div class="option-card" data-value="rebellious" onclick="selectOption(this, 'emotion')">
+                                <div class="option-icon">🔥</div>
+                                <div class="option-title">Rebellious</div>
+                                <div class="option-desc">Raw, defiant, unapologetic</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Style Sage Question -->
+                    <div class="agent-question-card">
+                        <div class="agent-question-header">
+                            <div class="asking-agent">
+                                <div class="asking-agent-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">✨</div>
+                                <div class="asking-agent-info">
+                                    <h4>Style Sage</h4>
+                                    <p>Aesthetic Director</p>
+                                </div>
+                            </div>
+                            <span class="question-importance critical">Critical</span>
+                        </div>
+                        <div class="question-text">What visual style resonates with your artistic vision?</div>
+                        <div class="question-context">I'll craft a cohesive aesthetic language that's authentic to your brand and irresistible to your audience.</div>
+
+                        <div class="options-grid">
+                            <div class="option-card" data-value="cinematic" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">🎬</div>
+                                <div class="option-title">Cinematic</div>
+                                <div class="option-desc">Film-like, dramatic lighting</div>
+                            </div>
+                            <div class="option-card" data-value="minimalist" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">⬜</div>
+                                <div class="option-title">Minimalist</div>
+                                <div class="option-desc">Clean, focused, elegant</div>
+                            </div>
+                            <div class="option-card" data-value="maximalist" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">🎨</div>
+                                <div class="option-title">Maximalist</div>
+                                <div class="option-desc">Rich, layered, bold colors</div>
+                            </div>
+                            <div class="option-card" data-value="retro" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">📼</div>
+                                <div class="option-title">Retro/Vintage</div>
+                                <div class="option-desc">Nostalgic, textured, warm</div>
+                            </div>
+                            <div class="option-card" data-value="futuristic" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">🚀</div>
+                                <div class="option-title">Futuristic</div>
+                                <div class="option-desc">Sci-fi, neon, tech-forward</div>
+                            </div>
+                            <div class="option-card" data-value="organic" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">🌿</div>
+                                <div class="option-title">Organic/Natural</div>
+                                <div class="option-desc">Earthy, flowing, authentic</div>
+                            </div>
+                            <div class="option-card" data-value="abstract" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">🔮</div>
+                                <div class="option-title">Abstract</div>
+                                <div class="option-desc">Conceptual, artistic, unique</div>
+                            </div>
+                            <div class="option-card" data-value="photorealistic" onclick="selectOption(this, 'style')">
+                                <div class="option-icon">📸</div>
+                                <div class="option-title">Photo-realistic</div>
+                                <div class="option-desc">Real, authentic, documentary</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label class="form-label">Visual References (Optional)</label>
+                            <textarea class="form-input" id="visualReferences" placeholder="Describe any visual references, artists, films, or aesthetics you admire..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Subjects to Include (Optional)</label>
+                            <div class="tag-input-container" id="subjectTags">
+                                <input type="text" class="tag-input" id="subjectInput" placeholder="Type and press Enter (e.g., Artist portrait, Abstract patterns, Urban scenes...)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="prevStep()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn btn-primary" onclick="startAgentResearch()">
+                            Start Agent Research
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Agent Research -->
+                <div class="wizard-step" id="step-4">
+                    <div class="research-panel">
+                        <div class="research-header">
+                            <div class="research-spinner"></div>
+                            <div>
+                                <h3>Agent Team Researching...</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem;">Our agents are analyzing demographics, trends, and creating your visual strategy</p>
+                            </div>
+                        </div>
+
+                        <div class="research-logs" id="researchLogs">
+                            <!-- Logs will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Research Insights (shown when complete) -->
+                    <div class="form-section" id="researchInsights" style="display: none;">
+                        <div class="form-section-title">
+                            <span>📊</span> Research Insights
+                        </div>
+                        <div id="insightsContent">
+                            <!-- Populated by agent research -->
+                        </div>
+                    </div>
+
+                    <div class="btn-row" id="researchActions" style="display: none;">
+                        <button class="btn btn-secondary" onclick="prevStep()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Modify Inputs
+                        </button>
+                        <button class="btn btn-primary" onclick="generateImages()">
+                            Generate Images
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Image Generation -->
+                <div class="wizard-step" id="step-5">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>🖼️</span> Generated Images
+                        </div>
+                        <p class="form-section-desc">Prompt Oracle has crafted these images based on your audience and vision</p>
+                    </div>
+
+                    <div class="images-grid" id="imagesGrid">
+                        <!-- Images will be populated dynamically -->
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <span>🔄</span> Refine Generation
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Additional Direction</label>
+                            <textarea class="form-input" id="refinementNotes" placeholder="Tell the agents how to adjust the next generation..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="regenerateImages()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 4v6h6M23 20v-6h-6"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                            Regenerate
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadAll()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                            </svg>
+                            Download All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Three.js for WebGL background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================================
+        // WebGL Particle Background
+        // ============================================================
+        let scene, camera, renderer, particles;
+
+        function initWebGL() {
+            const canvas = document.getElementById('webgl-canvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Particles
+            const geometry = new THREE.BufferGeometry();
+            const count = 3000;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            for(let i = 0; i < count * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 20;
+                positions[i + 1] = (Math.random() - 0.5) * 20;
+                positions[i + 2] = (Math.random() - 0.5) * 20;
+
+                // Emerald/teal gradient colors
+                const t = Math.random();
+                colors[i] = 0.06 + t * 0.04;     // R
+                colors[i + 1] = 0.72 + t * 0.1;  // G (emerald)
+                colors[i + 2] = 0.5 + t * 0.33;  // B (teal shift)
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.03,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            camera.position.z = 5;
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.0003;
+            particles.rotation.x += 0.0001;
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============================================================
+        // Wizard State Management
+        // ============================================================
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        const formData = {
+            songTitle: '',
+            artistName: '',
+            genre: null,
+            songDescription: '',
+            musicLink: '',
+            audience: [],
+            cultureTags: [],
+            platforms: [],
+            emotion: null,
+            style: null,
+            visualReferences: '',
+            subjects: []
+        };
+
+        function selectOption(card, field) {
+            const container = card.parentElement;
+            container.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            formData[field] = card.dataset.value;
+        }
+
+        function toggleMultiSelect(card, field) {
+            card.classList.toggle('selected');
+            const value = card.querySelector('.option-title').textContent;
+
+            if (!formData[field]) formData[field] = [];
+
+            if (card.classList.contains('selected')) {
+                if (!formData[field].includes(value)) {
+                    formData[field].push(value);
+                }
+            } else {
+                formData[field] = formData[field].filter(v => v !== value);
+            }
+        }
+
+        function updateStepIndicators() {
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`step-indicator-${i}`);
+                indicator.classList.remove('active', 'completed');
+
+                if (i < currentStep) {
+                    indicator.classList.add('completed');
+                } else if (i === currentStep) {
+                    indicator.classList.add('active');
+                }
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            updateStepIndicators();
+        }
+
+        function collectFormData() {
+            formData.songTitle = document.getElementById('songTitle').value;
+            formData.artistName = document.getElementById('artistName').value;
+            formData.songDescription = document.getElementById('songDescription').value;
+            formData.musicLink = document.getElementById('musicLink').value;
+            formData.visualReferences = document.getElementById('visualReferences')?.value || '';
+        }
+
+        function nextStep() {
+            collectFormData();
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        // ============================================================
+        // Tag Input Handling
+        // ============================================================
+        function setupTagInput(inputId, containerId, dataField) {
+            const input = document.getElementById(inputId);
+            const container = document.getElementById(containerId);
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    e.preventDefault();
+                    const value = input.value.trim();
+
+                    if (!formData[dataField]) formData[dataField] = [];
+                    if (!formData[dataField].includes(value)) {
+                        formData[dataField].push(value);
+
+                        const tag = document.createElement('span');
+                        tag.className = 'tag';
+                        tag.innerHTML = `${value} <span class="tag-remove" onclick="removeTag(this, '${dataField}', '${value}')">✕</span>`;
+                        container.insertBefore(tag, input);
+                    }
+
+                    input.value = '';
+                }
+            });
+        }
+
+        function removeTag(element, field, value) {
+            element.parentElement.remove();
+            formData[field] = formData[field].filter(v => v !== value);
+        }
+
+        // ============================================================
+        // Agent Research Simulation
+        // ============================================================
+        const agentLogs = [
+            { agent: 'Demo Scout', message: 'Initializing demographic analysis...' },
+            { agent: 'Demo Scout', message: 'Analyzing target audience: {audience}' },
+            { agent: 'Demo Scout', message: 'Researching cultural trends for {culture} communities...' },
+            { agent: 'Demo Scout', message: 'Mapping visual preferences by age group...' },
+            { agent: 'Vision Pro', message: 'Receiving demographic insights...' },
+            { agent: 'Vision Pro', message: 'Analyzing emotional core: {emotion}' },
+            { agent: 'Vision Pro', message: 'Designing visual concepts for {genre} music...' },
+            { agent: 'Vision Pro', message: 'Creating mood board references...' },
+            { agent: 'Style Sage', message: 'Reviewing visual strategy...' },
+            { agent: 'Style Sage', message: 'Applying {style} aesthetic framework...' },
+            { agent: 'Style Sage', message: 'Optimizing for {platforms} platforms...' },
+            { agent: 'Style Sage', message: 'Finalizing color palette and typography...' },
+            { agent: 'Prompt Oracle', message: 'Synthesizing all research inputs...' },
+            { agent: 'Prompt Oracle', message: 'Crafting optimized generation prompts...' },
+            { agent: 'Prompt Oracle', message: 'Preparing 4 unique visual concepts...' },
+            { agent: 'Prompt Oracle', message: 'Research complete. Ready to generate!' }
+        ];
+
+        function startAgentResearch() {
+            collectFormData();
+            currentStep = 4;
+            showStep(currentStep);
+
+            // Update agent statuses
+            const agents = ['demographic', 'visual', 'style', 'prompt'];
+            agents.forEach(a => {
+                document.getElementById(`agent-${a}`).classList.remove('active', 'completed');
+                document.getElementById(`status-${a}`).textContent = 'Standby';
+                document.getElementById(`status-${a}`).className = 'agent-status-indicator';
+            });
+
+            const logsContainer = document.getElementById('researchLogs');
+            logsContainer.innerHTML = '';
+
+            let logIndex = 0;
+
+            function addLog() {
+                if (logIndex >= agentLogs.length) {
+                    // Research complete
+                    document.getElementById('researchInsights').style.display = 'block';
+                    document.getElementById('researchActions').style.display = 'flex';
+                    document.querySelector('.research-spinner').style.display = 'none';
+                    populateInsights();
+                    return;
+                }
+
+                const log = agentLogs[logIndex];
+                let message = log.message;
+
+                // Replace placeholders
+                message = message.replace('{audience}', formData.audience?.join(', ') || 'All demographics');
+                message = message.replace('{culture}', formData.cultureTags?.join(', ') || 'diverse');
+                message = message.replace('{emotion}', formData.emotion || 'powerful');
+                message = message.replace('{genre}', formData.genre || 'contemporary');
+                message = message.replace('{style}', formData.style || 'cinematic');
+                message = message.replace('{platforms}', formData.platforms?.join(', ') || 'social media');
+
+                const now = new Date();
+                const time = now.toLocaleTimeString('en-US', { hour12: false });
+
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${time}]</span>
+                    <span class="log-agent">${log.agent}:</span>
+                    <span class="log-message">${message}</span>
+                `;
+                logsContainer.appendChild(entry);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+
+                // Update agent status
+                updateAgentStatus(log.agent);
+
+                logIndex++;
+                setTimeout(addLog, 800 + Math.random() * 600);
+            }
+
+            addLog();
+        }
+
+        function updateAgentStatus(agentName) {
+            const agentMap = {
+                'Demo Scout': 'demographic',
+                'Vision Pro': 'visual',
+                'Style Sage': 'style',
+                'Prompt Oracle': 'prompt'
+            };
+
+            const agentId = agentMap[agentName];
+            if (!agentId) return;
+
+            // Mark previous agents as completed
+            const agents = ['demographic', 'visual', 'style', 'prompt'];
+            const currentIndex = agents.indexOf(agentId);
+
+            agents.forEach((a, i) => {
+                const card = document.getElementById(`agent-${a}`);
+                const status = document.getElementById(`status-${a}`);
+
+                if (i < currentIndex) {
+                    card.classList.remove('active');
+                    card.classList.add('completed');
+                    status.textContent = 'Done';
+                    status.className = 'agent-status-indicator done';
+                } else if (i === currentIndex) {
+                    card.classList.add('active');
+                    card.classList.remove('completed');
+                    status.textContent = 'Working';
+                    status.className = 'agent-status-indicator working';
+                }
+            });
+        }
+
+        function populateInsights() {
+            const insights = document.getElementById('insightsContent');
+            insights.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-light); margin-bottom: 0.5rem;">🎯 Target Audience</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">${formData.audience?.join(', ') || 'Universal appeal'}</p>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-light); margin-bottom: 0.5rem;">🎨 Visual Strategy</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">${formData.style || 'Cinematic'} + ${formData.emotion || 'Powerful'}</p>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-light); margin-bottom: 0.5rem;">📱 Optimized For</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">${formData.platforms?.join(', ') || 'All platforms'}</p>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-light); margin-bottom: 0.5rem;">🎵 Genre Context</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">${formData.genre || 'Contemporary'} music visual language</p>
+                    </div>
+                </div>
+            `;
+
+            // Mark all agents as complete
+            ['demographic', 'visual', 'style', 'prompt'].forEach(a => {
+                document.getElementById(`agent-${a}`).classList.remove('active');
+                document.getElementById(`agent-${a}`).classList.add('completed');
+                document.getElementById(`status-${a}`).textContent = 'Done';
+                document.getElementById(`status-${a}`).className = 'agent-status-indicator done';
+            });
+        }
+
+        // ============================================================
+        // Image Generation
+        // ============================================================
+        const sampleConcepts = [
+            {
+                concept: 'Artist Power Portrait',
+                rationale: 'Bold close-up leveraging cinematic lighting to convey the emotional intensity your audience connects with.',
+                icon: '👤'
+            },
+            {
+                concept: 'Abstract Energy Wave',
+                rationale: 'Dynamic visual metaphor representing the music\'s rhythm and emotional arc, optimized for social sharing.',
+                icon: '🌊'
+            },
+            {
+                concept: 'Cultural Moment',
+                rationale: 'Scene that resonates with your target demographic\'s lived experiences and aspirations.',
+                icon: '🌆'
+            },
+            {
+                concept: 'Symbolic Composition',
+                rationale: 'Layered imagery with hidden meanings that reward closer inspection, perfect for album artwork.',
+                icon: '🔮'
+            }
+        ];
+
+        function generateImages() {
+            currentStep = 5;
+            showStep(currentStep);
+
+            const grid = document.getElementById('imagesGrid');
+            grid.innerHTML = '';
+
+            sampleConcepts.forEach((concept, i) => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.innerHTML = `
+                    <div class="image-preview">
+                        <div style="text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">${concept.icon}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Generating...</div>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <div class="image-concept">${concept.concept}</div>
+                        <div class="image-rationale">${concept.rationale}</div>
+                        <div class="image-actions">
+                            <button class="image-action-btn">Variations</button>
+                            <button class="image-action-btn primary">Download</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                // Simulate generation
+                setTimeout(() => {
+                    const preview = card.querySelector('.image-preview');
+                    preview.innerHTML = `<div style="font-size: 5rem;">${concept.icon}</div>`;
+                    preview.style.background = `linear-gradient(135deg, rgba(16, 185, 129, ${0.2 + i * 0.1}), rgba(6, 182, 212, ${0.3 + i * 0.1}))`;
+                }, 1000 + i * 500);
+            });
+        }
+
+        function regenerateImages() {
+            generateImages();
+        }
+
+        function downloadAll() {
+            alert('Download functionality will be connected to the image generation API.');
+        }
+
+        // ============================================================
+        // Authentication Check
+        // ============================================================
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+
+        // ============================================================
+        // Initialize
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            initWebGL();
+            setupTagInput('cultureInput', 'cultureTags', 'cultureTags');
+            setupTagInput('subjectInput', 'subjectTags', 'subjects');
+        });
+    </script>
+</body>
+</html>

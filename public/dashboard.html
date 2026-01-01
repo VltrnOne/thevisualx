@@ -756,6 +756,14 @@
                     </svg>
                     <span>Orchestrator</span>
                 </a>
+                <a class="nav-item" data-engine="imagebrain">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span>ImageBrain</span>
+                </a>
             </div>
         </nav>
 
@@ -883,6 +891,21 @@
                             <p class="engine-desc">Complete visual package creation for any platform</p>
                             <div class="engine-status">
                                 <div class="status-dot" id="orchestratorStatus"></div>
+                                <span>Ready</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="engine-card" data-engine="imagebrain">
+                        <div class="engine-header">
+                            <div class="engine-gradient" style="background: linear-gradient(135deg, #10b981, #06b6d4);"></div>
+                            <div class="engine-number">06</div>
+                        </div>
+                        <div class="engine-body">
+                            <h3 class="engine-name">ImageBrain</h3>
+                            <p class="engine-desc">AI still image generator with demographic research agents</p>
+                            <div class="engine-status">
+                                <div class="status-dot" id="imagebrainStatus"></div>
                                 <span>Ready</span>
                             </div>
                         </div>
@@ -1374,6 +1397,11 @@
             document.querySelectorAll('.engine-card, [data-engine]').forEach(el => {
                 el.addEventListener('click', (e) => {
                     const engine = el.dataset.engine;
+                    // ImageBrain has a full-page wizard experience
+                    if (engine === 'imagebrain') {
+                        window.location.href = '/engine/imagebrain';
+                        return;
+                    }
                     if (engine && engineConfigs[engine]) {
                         openEnginePanel(engine);
                     }

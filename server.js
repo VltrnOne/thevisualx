@@ -117,9 +117,34 @@ app.post('/api/engines/orchestrator/create', authenticateToken, async (req, res)
     const result = await enginesClient.createVisualPackage(req.body);
     res.json(result);
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ImageBrain - Generate still images with agent research
+app.post('/api/engines/imagebrain/research', authenticateToken, async (req, res) => {
+  try {
+    const result = await enginesClient.researchAudience(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/engines/imagebrain/generate', authenticateToken, async (req, res) => {
+  try {
+    const result = await enginesClient.generateStillImages(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -203,6 +228,10 @@ app.get('/engine/editbrain', (req, res) => {
 
 app.get('/engine/orchestrator', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'engine-orchestrator.html'));
+});
+
+app.get('/engine/imagebrain', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'engine-imagebrain.html'));
 });
 
 // Projects API routes

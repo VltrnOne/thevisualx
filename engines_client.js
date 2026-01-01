@@ -153,6 +153,72 @@ class EnginesClient {
             throw new Error(`Orchestrator failed: ${error.message}`);
         }
     }
+
+    /**
+     * Research audience demographics and visual preferences using ImageBrain agents
+     */
+    async researchAudience({
+        song_title,
+        artist_name,
+        genre,
+        song_description,
+        music_link = null,
+        audience = [],
+        culture_tags = [],
+        platforms = []
+    }) {
+        try {
+            const response = await axios.post(`${this.baseURL}/api/imagebrain/research`, {
+                song_title,
+                artist_name,
+                genre,
+                song_description,
+                music_link,
+                audience,
+                culture_tags,
+                platforms
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(`ImageBrain research failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Generate still images based on research and visual direction
+     */
+    async generateStillImages({
+        song_title,
+        artist_name,
+        genre,
+        emotion,
+        style,
+        audience = [],
+        platforms = [],
+        visual_references = '',
+        subjects = [],
+        research_insights = {},
+        num_images = 4
+    }) {
+        try {
+            const response = await axios.post(`${this.baseURL}/api/imagebrain/generate`, {
+                song_title,
+                artist_name,
+                genre,
+                emotion,
+                style,
+                audience,
+                platforms,
+                visual_references,
+                subjects,
+                research_insights,
+                num_images
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(`ImageBrain generation failed: ${error.message}`);
+        }
+    }
 }
 
 module.exports = EnginesClient;
