@@ -2,7 +2,18 @@
 flask>=3.0.0
 flask-cors>=4.0.0
 python-dotenv>=1.0.0
+werkzeug>=3.0.0
 
-# Core engine dependencies (from visual-x)
-# Note: Full requirements available in visual-x-repo/requirements.txt
-# Install full requirements for complete functionality
+# Audio Analysis (for music analysis)
+librosa>=0.10.0
+numpy>=1.24.0
+scipy>=1.11.0
+soundfile>=0.12.0
+
+# Optional: LLM integration for Creative Council
+anthropic>=0.25.0
+openai>=1.12.0
+
+# Optional: Image generation
+requests>=2.31.0
+Pillow>=10.0.0

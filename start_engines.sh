@@ -1,13 +1,25 @@
 #!/bin/bash
-# Start the VISUALX Engine Service
+# VISUALX Engine Service Startup Script
 
-cd "$(dirname "$0")/engines"
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENGINES_DIR="$SCRIPT_DIR/engines"
+
+echo "=============================================="
+echo "VISUALX Engine Service"
+echo "Powered by VLTRN"
+echo "=============================================="
+
+cd "$ENGINES_DIR"
 
 # Check if Python is available
 if ! command -v python3 &> /dev/null; then
     echo "❌ Python 3 is required but not installed."
     exit 1
 fi
+
+echo "📍 Python: $(python3 --version)"
 
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
@@ -16,15 +28,23 @@ if [ ! -d "venv" ]; then
 fi
 
 # Activate virtual environment
+echo "🔌 Activating virtual environment..."
 source venv/bin/activate
 
 # Install dependencies
 echo "📥 Installing Python dependencies..."
-pip install -r requirements.txt
+pip install -q --upgrade pip
+pip install -q -r requirements.txt
+
+# Set port
+PORT="${ENGINE_SERVICE_PORT:-5051}"
+
+echo ""
+echo "=============================================="
+echo "Starting VISUALX Engine Service"
+echo "Port: $PORT"
+echo "Audio Analysis: $(python3 -c 'import librosa; print("Enabled")' 2>/dev/null || echo 'Disabled')"
+echo "=============================================="
 
 # Start the engine service
-echo "🚀 Starting VISUALX Engine Service on port 5051..."
 python3 engine_service.py
-
-
-

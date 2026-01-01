@@ -5,10 +5,40 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
+const FormData = require('form-data');
+const multer = require('multer');
 const { initDatabase } = require('./database');
 const { signup, login, verify, authenticateToken, authenticateAdmin, adminLogin, adminVerify } = require('./auth');
 const { User } = require('./database');
 const EnginesClient = require('./engines_client');
+
+// Configure multer for audio file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed'), false);
+    }
+  }
+});
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -209,6 +239,176 @@ app.post('/api/engines/imagebrain/generate', authenticateToken, async (req, res)
   }
 });
 
+// ============================================================
+// Audio Upload & Project Management Routes
+// ============================================================
+
+// Upload audio file
+app.post('/api/engines/upload', authenticateToken, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No audio file provided' });
+    }
+
+    const { title, genre, artist_description } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ success: false, error: 'Project title is required' });
+    }
+
+    // Forward to Python engine service
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(req.file.path), req.file.originalname);
+    formData.append('title', title);
+    formData.append('genre', genre || 'electronic');
+    formData.append('artist_description', artist_description || '');
+    formData.append('user_id', req.user.id.toString());
+
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.post(`${engineUrl}/api/upload`, formData, {
+      headers: {
+        ...formData.getHeaders(),
+        'Content-Length': formData.getLengthSync()
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    });
+
+    // Clean up the temporary file
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Failed to delete temp file:', err);
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('Upload error:', error.message);
+    // Clean up on error
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, () => {});
+    }
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
+// Analyze uploaded audio
+app.post('/api/engines/analyze/:projectId', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.post(`${engineUrl}/api/analyze/${req.params.projectId}`, {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Analysis error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
+// Get all projects for user
+app.get('/api/engines/projects', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.get(`${engineUrl}/api/projects`, {
+      params: { user_id: req.user.id }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Projects fetch error:', error.message);
+    res.json({ success: true, projects: [] }); // Return empty array on error
+  }
+});
+
+// Get single project
+app.get('/api/engines/project/:projectId', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.get(`${engineUrl}/api/project/${req.params.projectId}`);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Project fetch error:', error.message);
+    res.status(404).json({
+      success: false,
+      error: 'Project not found'
+    });
+  }
+});
+
+// VisualX Magic - Generate prompts
+app.post('/api/engines/magic/generate-prompts', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.post(`${engineUrl}/api/magic/generate-prompts`, req.body, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Magic prompts error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
+// Get prompts for project
+app.get('/api/engines/magic/prompts/:projectId', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.get(`${engineUrl}/api/magic/prompts/${req.params.projectId}`);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Get prompts error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
+// Update prompts for project
+app.put('/api/engines/magic/prompts/:projectId', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.put(`${engineUrl}/api/magic/prompts/${req.params.projectId}`, req.body, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Update prompts error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
+// Get job status
+app.get('/api/engines/job/:jobId', authenticateToken, async (req, res) => {
+  try {
+    const engineUrl = process.env.ENGINE_SERVICE_URL || 'http://localhost:5051';
+    const response = await axios.get(`${engineUrl}/api/job/${req.params.jobId}`);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Job status error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error || error.message
+    });
+  }
+});
+
 // Existing webhook routes
 app.post('/new-client', async (req, res) => {
   const data = req.body;
@@ -304,6 +504,11 @@ app.get('/engine/orchestrator', (req, res) => {
 
 app.get('/engine/imagebrain', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'engine-imagebrain.html'));
+});
+
+// Project detail page
+app.get('/project/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'project.html'));
 });
 
 // Projects API routes
