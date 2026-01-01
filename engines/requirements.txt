@@ -1,0 +1,8 @@
+# VISUALX Engine Service Dependencies
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+
+# Core engine dependencies (from visual-x)
+# Note: Full requirements available in visual-x-repo/requirements.txt
+# Install full requirements for complete functionality

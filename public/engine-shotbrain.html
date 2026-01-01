@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShotBrain | VISUALX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent: #4facfe;
+            --accent-light: #00f2fe;
+            --gradient-1: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #webgl-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0; top: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 3rem;
+        }
+
+        .logo span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover { color: var(--text-primary); }
+
+        .engine-info {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .engine-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .engine-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .engine-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .engine-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #22c55e;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .presets {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .preset-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .preset-btn {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        .preset-btn h4 {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .preset-btn p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem 3rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .form-section.full-width {
+            grid-column: span 2;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Shot Type Selector */
+        .shot-type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .shot-type-btn {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .shot-type-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .shot-type-btn.selected {
+            background: var(--gradient-1);
+            border-color: transparent;
+        }
+
+        .shot-type-btn h5 {
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .shot-type-btn p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .shot-type-btn.selected p {
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Camera Movement Selector */
+        .movement-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .movement-btn {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .movement-btn:hover { border-color: var(--accent); }
+        .movement-btn.selected {
+            background: rgba(79, 172, 254, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Energy Slider */
+        .energy-slider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .energy-slider input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            border: none;
+        }
+
+        .energy-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            cursor: pointer;
+        }
+
+        .energy-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .output-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .output-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .output-results { display: none; }
+        .output-results.active { display: block; }
+
+        .shot-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .shot-preview {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .shot-preview::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 60%;
+            border: 2px dashed rgba(79, 172, 254, 0.3);
+            transform: translate(-50%, -50%);
+            border-radius: 4px;
+        }
+
+        .shot-preview-label {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            background: rgba(0,0,0,0.5);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .shot-preview svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.6;
+        }
+
+        .shot-specs {
+            padding: 1rem 0;
+        }
+
+        .spec-card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .spec-card h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .spec-card p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 3rem;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: #22c55e; }
+        .toast.error { border-color: #ef4444; }
+
+        @media (max-width: 1024px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-section.full-width { grid-column: span 1; }
+            .shot-result { grid-template-columns: 1fr; }
+            .shot-type-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">VISUAL<span>X</span></div>
+
+            <a href="/dashboard" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="engine-info">
+                <div class="engine-title">
+                    <div class="engine-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                    </div>
+                    ShotBrain
+                </div>
+                <p class="engine-desc">AI-powered cinematography intelligence. Design professional camera shots, movements, and compositions.</p>
+                <div class="engine-status">
+                    <span class="status-dot"></span>
+                    Engine Online
+                </div>
+            </div>
+
+            <div class="presets">
+                <div class="preset-title">Shot Styles</div>
+
+                <button class="preset-btn" onclick="loadPreset('dramatic')">
+                    <h4>Dramatic Reveal</h4>
+                    <p>Epic slow dolly in</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('action')">
+                    <h4>Action Sequence</h4>
+                    <p>Fast, dynamic movement</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('intimate')">
+                    <h4>Intimate Portrait</h4>
+                    <p>Close-up, shallow DOF</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('establishing')">
+                    <h4>Establishing Wide</h4>
+                    <p>Scene-setting aerial</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('handheld')">
+                    <h4>Vérité Style</h4>
+                    <p>Organic handheld feel</p>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="header">
+                <h1>ShotBrain</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    <button class="btn btn-primary" onclick="designShot()">
+                        <span id="submitText">Design Shot</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="form-grid">
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        Shot Type
+                    </h3>
+
+                    <div class="shot-type-grid" id="shotTypeGrid">
+                        <div class="shot-type-btn" data-type="extreme-wide">
+                            <h5>Extreme Wide</h5>
+                            <p>Environment focus</p>
+                        </div>
+                        <div class="shot-type-btn" data-type="wide">
+                            <h5>Wide Shot</h5>
+                            <p>Full body + context</p>
+                        </div>
+                        <div class="shot-type-btn" data-type="medium">
+                            <h5>Medium Shot</h5>
+                            <p>Waist-up framing</p>
+                        </div>
+                        <div class="shot-type-btn" data-type="medium-close">
+                            <h5>Medium Close</h5>
+                            <p>Chest-up focus</p>
+                        </div>
+                        <div class="shot-type-btn" data-type="close-up">
+                            <h5>Close-Up</h5>
+                            <p>Face detail</p>
+                        </div>
+                        <div class="shot-type-btn" data-type="extreme-close">
+                            <h5>Extreme Close</h5>
+                            <p>Eye/detail level</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Camera Movement
+                    </h3>
+
+                    <div class="movement-grid" id="movementGrid">
+                        <div class="movement-btn" data-movement="static">Static</div>
+                        <div class="movement-btn" data-movement="pan">Pan</div>
+                        <div class="movement-btn" data-movement="tilt">Tilt</div>
+                        <div class="movement-btn" data-movement="dolly">Dolly</div>
+                        <div class="movement-btn" data-movement="truck">Truck</div>
+                        <div class="movement-btn" data-movement="pedestal">Pedestal</div>
+                        <div class="movement-btn" data-movement="orbit">Orbit</div>
+                        <div class="movement-btn" data-movement="handheld">Handheld</div>
+                        <div class="movement-btn" data-movement="crane">Crane</div>
+                        <div class="movement-btn" data-movement="zoom">Zoom</div>
+                        <div class="movement-btn" data-movement="push">Push In</div>
+                        <div class="movement-btn" data-movement="pull">Pull Out</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Energy & Timing
+                    </h3>
+
+                    <div class="form-group">
+                        <label>Energy Level</label>
+                        <div class="energy-slider">
+                            <input type="range" id="energyLevel" min="0" max="100" value="50">
+                            <span class="energy-value" id="energyValue">50%</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Shot Duration</label>
+                        <select id="duration">
+                            <option value="2">2 seconds (Quick cut)</option>
+                            <option value="4" selected>4 seconds (Standard)</option>
+                            <option value="6">6 seconds (Slow)</option>
+                            <option value="8">8 seconds (Deliberate)</option>
+                            <option value="12">12+ seconds (Long take)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="beatPosition">Beat Position</label>
+                        <select id="beatPosition">
+                            <option value="on-beat">On the beat</option>
+                            <option value="off-beat">Off-beat</option>
+                            <option value="build">Building energy</option>
+                            <option value="drop">Post-drop</option>
+                            <option value="transition">Transition moment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        Context
+                    </h3>
+
+                    <div class="form-group">
+                        <label for="genre">Genre / Style</label>
+                        <select id="genre">
+                            <option value="">Select genre</option>
+                            <option value="hip-hop">Hip Hop</option>
+                            <option value="pop">Pop</option>
+                            <option value="rock">Rock</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="r&b">R&B</option>
+                            <option value="cinematic">Cinematic</option>
+                            <option value="documentary">Documentary</option>
+                            <option value="commercial">Commercial</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emotionalGoal">Emotional Goal</label>
+                        <input type="text" id="emotionalGoal" placeholder="e.g., tension, celebration, introspection">
+                    </div>
+                </div>
+
+                <div class="form-section full-width">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Scene Context
+                    </h3>
+
+                    <div class="form-group">
+                        <label for="sceneContext">Describe the scene and what you want to capture</label>
+                        <textarea id="sceneContext" placeholder="E.g., 'Artist performing on rooftop at sunset, buildings in background, should feel triumphant and free'"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <h3 class="section-title" style="margin-bottom: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        Shot Design
+                    </h3>
+                </div>
+
+                <div class="output-placeholder" id="outputPlaceholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <p>Design your shot to see the cinematography specification</p>
+                </div>
+
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <span>Composing the perfect shot...</span>
+                </div>
+
+                <div class="output-results" id="outputResults"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast">
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+
+        let selectedShotType = '';
+        let selectedMovements = [];
+
+        // Shot type selection
+        document.querySelectorAll('.shot-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.shot-type-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedShotType = btn.dataset.type;
+            });
+        });
+
+        // Movement multi-select
+        document.querySelectorAll('.movement-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('selected');
+                const movement = btn.dataset.movement;
+                if (selectedMovements.includes(movement)) {
+                    selectedMovements = selectedMovements.filter(m => m !== movement);
+                } else {
+                    selectedMovements.push(movement);
+                }
+            });
+        });
+
+        // Energy slider
+        document.getElementById('energyLevel').addEventListener('input', (e) => {
+            document.getElementById('energyValue').textContent = e.target.value + '%';
+        });
+
+        const presets = {
+            'dramatic': {
+                shotType: 'medium-close',
+                movements: ['dolly', 'push'],
+                energy: 40,
+                duration: '6',
+                beatPosition: 'build',
+                genre: 'cinematic',
+                emotionalGoal: 'tension, anticipation',
+                context: 'Slow reveal of subject, building dramatic tension with deliberate camera push'
+            },
+            'action': {
+                shotType: 'wide',
+                movements: ['handheld', 'truck'],
+                energy: 85,
+                duration: '2',
+                beatPosition: 'on-beat',
+                genre: 'hip-hop',
+                emotionalGoal: 'energy, power',
+                context: 'Fast-paced action with dynamic movement, quick cuts on the beat'
+            },
+            'intimate': {
+                shotType: 'close-up',
+                movements: ['static'],
+                energy: 25,
+                duration: '8',
+                beatPosition: 'off-beat',
+                genre: 'r&b',
+                emotionalGoal: 'vulnerability, connection',
+                context: 'Intimate portrait with shallow depth of field, natural light'
+            },
+            'establishing': {
+                shotType: 'extreme-wide',
+                movements: ['crane', 'pan'],
+                energy: 30,
+                duration: '8',
+                beatPosition: 'transition',
+                genre: 'cinematic',
+                emotionalGoal: 'scope, grandeur',
+                context: 'Sweeping aerial establishing shot revealing the environment'
+            },
+            'handheld': {
+                shotType: 'medium',
+                movements: ['handheld'],
+                energy: 55,
+                duration: '4',
+                beatPosition: 'off-beat',
+                genre: 'documentary',
+                emotionalGoal: 'authenticity, immediacy',
+                context: 'Organic handheld feel, following subject naturally through space'
+            }
+        };
+
+        function loadPreset(name) {
+            const preset = presets[name];
+            if (preset) {
+                // Set shot type
+                document.querySelectorAll('.shot-type-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.type === preset.shotType);
+                });
+                selectedShotType = preset.shotType;
+
+                // Set movements
+                selectedMovements = [...preset.movements];
+                document.querySelectorAll('.movement-btn').forEach(b => {
+                    b.classList.toggle('selected', preset.movements.includes(b.dataset.movement));
+                });
+
+                // Set other fields
+                document.getElementById('energyLevel').value = preset.energy;
+                document.getElementById('energyValue').textContent = preset.energy + '%';
+                document.getElementById('duration').value = preset.duration;
+                document.getElementById('beatPosition').value = preset.beatPosition;
+                document.getElementById('genre').value = preset.genre;
+                document.getElementById('emotionalGoal').value = preset.emotionalGoal;
+                document.getElementById('sceneContext').value = preset.context;
+
+                showToast('Preset loaded', 'success');
+            }
+        }
+
+        function clearForm() {
+            document.querySelectorAll('.shot-type-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.movement-btn').forEach(b => b.classList.remove('selected'));
+            selectedShotType = '';
+            selectedMovements = [];
+            document.getElementById('energyLevel').value = 50;
+            document.getElementById('energyValue').textContent = '50%';
+            document.getElementById('duration').value = '4';
+            document.getElementById('beatPosition').value = 'on-beat';
+            document.getElementById('genre').value = '';
+            document.getElementById('emotionalGoal').value = '';
+            document.getElementById('sceneContext').value = '';
+            document.getElementById('outputResults').innerHTML = '';
+            document.getElementById('outputResults').classList.remove('active');
+            document.getElementById('outputPlaceholder').style.display = 'flex';
+        }
+
+        async function designShot() {
+            const data = {
+                genre: document.getElementById('genre').value,
+                style: selectedShotType,
+                energy_level: parseInt(document.getElementById('energyLevel').value) / 100,
+                beat_position: document.getElementById('beatPosition').value,
+                duration: parseInt(document.getElementById('duration').value),
+                movements: selectedMovements,
+                emotional_goal: document.getElementById('emotionalGoal').value,
+                context: document.getElementById('sceneContext').value
+            };
+
+            if (!data.style) {
+                showToast('Please select a shot type', 'error');
+                return;
+            }
+
+            document.getElementById('outputPlaceholder').style.display = 'none';
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('outputResults').classList.remove('active');
+            document.getElementById('submitText').textContent = 'Designing...';
+
+            try {
+                const response = await fetch('/api/engines/shotbrain/design', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitText').textContent = 'Design Shot';
+
+                if (result.success) {
+                    displayResults(result);
+                    showToast('Shot designed!', 'success');
+                } else {
+                    document.getElementById('outputPlaceholder').style.display = 'flex';
+                    showToast(result.error || 'Failed to design shot', 'error');
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('outputPlaceholder').style.display = 'flex';
+                document.getElementById('submitText').textContent = 'Design Shot';
+                showToast('Connection error', 'error');
+            }
+        }
+
+        function displayResults(result) {
+            const container = document.getElementById('outputResults');
+            const output = result.output || {};
+
+            container.innerHTML = `
+                <div class="shot-result">
+                    <div class="shot-preview">
+                        <div class="shot-preview-label">${selectedShotType.replace('-', ' ').toUpperCase()}</div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <circle cx="12" cy="10" r="3"/>
+                            <line x1="12" y1="13" x2="12" y2="17"/>
+                            <line x1="8" y1="17" x2="16" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="shot-specs">
+                        <div class="spec-card">
+                            <h4>Camera Setup</h4>
+                            <p>${output.camera_setup || `${selectedShotType.replace('-', ' ')} with ${selectedMovements.join(', ') || 'static'} movement`}</p>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Movement Direction</h4>
+                            <p>${output.movement_description || `Smooth ${selectedMovements[0] || 'static'} movement following subject action`}</p>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Composition Notes</h4>
+                            <p>${output.composition || 'Rule of thirds with subject slightly off-center, leading room in direction of movement'}</p>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Timing & Rhythm</h4>
+                            <p>${output.timing || `${document.getElementById('duration').value}s duration, cut ${document.getElementById('beatPosition').value.replace('-', ' ')}`}</p>
+                        </div>
+                        <button class="copy-btn" onclick="copySpecs()">Copy Shot Specs</button>
+                    </div>
+                </div>
+            `;
+            container.classList.add('active');
+        }
+
+        function copySpecs() {
+            const specs = document.querySelector('.shot-specs').innerText;
+            navigator.clipboard.writeText(specs);
+            showToast('Specs copied!', 'success');
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Particle Background (cyan theme)
+        class ParticleField {
+            constructor() {
+                this.canvas = document.getElementById('webgl-canvas');
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                this.camera.position.z = 30;
+                this.createParticles();
+                this.animate();
+
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            createParticles() {
+                const geometry = new THREE.BufferGeometry();
+                const count = 1500;
+                const positions = new Float32Array(count * 3);
+                const colors = new Float32Array(count * 3);
+
+                for (let i = 0; i < count; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+
+                    const color = new THREE.Color();
+                    color.setHSL(0.5 + Math.random() * 0.1, 0.8, 0.5 + Math.random() * 0.3);
+                    colors[i * 3] = color.r;
+                    colors[i * 3 + 1] = color.g;
+                    colors[i * 3 + 2] = color.b;
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.15,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.8
+                });
+
+                this.particles = new THREE.Points(geometry, material);
+                this.scene.add(this.particles);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.particles.rotation.x += 0.0003;
+                this.particles.rotation.y += 0.0005;
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        new ParticleField();
+    </script>
+</body>
+</html>

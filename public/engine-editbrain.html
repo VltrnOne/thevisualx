@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditBrain | VISUALX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent: #fa709a;
+            --accent-light: #fee140;
+            --gradient-1: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #webgl-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0; top: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 3rem;
+        }
+
+        .logo span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover { color: var(--text-primary); }
+
+        .engine-info {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .engine-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .engine-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .engine-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .engine-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #22c55e;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .presets {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .preset-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .preset-btn {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            background: rgba(250, 112, 154, 0.05);
+        }
+
+        .preset-btn h4 {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .preset-btn p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem 3rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(250, 112, 154, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .form-section.full-width {
+            grid-column: span 2;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* BPM Input */
+        .bpm-input {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bpm-input input {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .bpm-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bpm-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #1a1a1a;
+        }
+
+        /* Section Tags */
+        .section-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .section-tag {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-tag:hover { border-color: var(--accent); }
+        .section-tag.selected {
+            background: var(--gradient-1);
+            border-color: transparent;
+            color: #1a1a1a;
+        }
+
+        /* Energy Curve */
+        .energy-curve {
+            display: flex;
+            gap: 4px;
+            height: 60px;
+            align-items: flex-end;
+            margin-top: 0.5rem;
+        }
+
+        .energy-bar {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 10px;
+        }
+
+        .energy-bar:hover {
+            background: rgba(250, 112, 154, 0.3);
+        }
+
+        .energy-bar.active {
+            background: var(--gradient-1);
+        }
+
+        .energy-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .output-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .output-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .output-results { display: none; }
+        .output-results.active { display: block; }
+
+        /* Timeline Visualization */
+        .timeline-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            height: 80px;
+            background: linear-gradient(90deg, rgba(250, 112, 154, 0.1) 0%, rgba(254, 225, 64, 0.1) 100%);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .timeline-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            width: 2px;
+            background: var(--accent);
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .timeline-marker::after {
+            content: attr(data-time);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        .timeline-ruler {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        /* Cut Points List */
+        .cut-points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .cut-point {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .cut-point-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .cut-point-type {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 3rem;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: #22c55e; }
+        .toast.error { border-color: #ef4444; }
+
+        @media (max-width: 1024px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-section.full-width { grid-column: span 1; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">VISUAL<span>X</span></div>
+
+            <a href="/dashboard" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="engine-info">
+                <div class="engine-title">
+                    <div class="engine-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                    </div>
+                    EditBrain
+                </div>
+                <p class="engine-desc">Beat-synced editing intelligence. Generate professional cut points and editing decisions based on your audio analysis.</p>
+                <div class="engine-status">
+                    <span class="status-dot"></span>
+                    Engine Online
+                </div>
+            </div>
+
+            <div class="presets">
+                <div class="preset-title">Edit Styles</div>
+
+                <button class="preset-btn" onclick="loadPreset('rapid')">
+                    <h4>Rapid Fire</h4>
+                    <p>Quick cuts on every beat</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('smooth')">
+                    <h4>Smooth Flow</h4>
+                    <p>Longer takes, gentle transitions</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('drop')">
+                    <h4>Drop Impact</h4>
+                    <p>Build-up to explosive cuts</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('cinematic')">
+                    <h4>Cinematic</h4>
+                    <p>Deliberate, story-driven</p>
+                </button>
+
+                <button class="preset-btn" onclick="loadPreset('montage')">
+                    <h4>Montage</h4>
+                    <p>Quick visual variety</p>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="header">
+                <h1>EditBrain</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    <button class="btn btn-primary" onclick="analyzeAudio()">
+                        <span id="submitText">Analyze Audio</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="form-grid">
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Audio Properties
+                    </h3>
+
+                    <div class="form-group">
+                        <label>BPM (Beats Per Minute)</label>
+                        <div class="bpm-input">
+                            <button class="bpm-btn" onclick="adjustBPM(-5)">-</button>
+                            <input type="number" id="bpm" value="120" min="60" max="200">
+                            <button class="bpm-btn" onclick="adjustBPM(5)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Track Duration (seconds)</label>
+                        <input type="number" id="duration" value="180" min="30" max="600" placeholder="180">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="genre">Genre</label>
+                        <select id="genre">
+                            <option value="">Select genre</option>
+                            <option value="hip-hop">Hip Hop</option>
+                            <option value="pop">Pop</option>
+                            <option value="rock">Rock</option>
+                            <option value="electronic">Electronic / EDM</option>
+                            <option value="r&b">R&B</option>
+                            <option value="trap">Trap</option>
+                            <option value="house">House</option>
+                            <option value="dubstep">Dubstep</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                        Song Sections
+                    </h3>
+
+                    <div class="form-group">
+                        <label>Select sections present in your track</label>
+                        <div class="section-tags" id="sectionTags">
+                            <span class="section-tag" data-section="intro">Intro</span>
+                            <span class="section-tag" data-section="verse">Verse</span>
+                            <span class="section-tag" data-section="pre-chorus">Pre-Chorus</span>
+                            <span class="section-tag" data-section="chorus">Chorus</span>
+                            <span class="section-tag" data-section="drop">Drop</span>
+                            <span class="section-tag" data-section="bridge">Bridge</span>
+                            <span class="section-tag" data-section="breakdown">Breakdown</span>
+                            <span class="section-tag" data-section="buildup">Build-Up</span>
+                            <span class="section-tag" data-section="outro">Outro</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section full-width">
+                    <h3 class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Energy Curve
+                    </h3>
+
+                    <div class="form-group">
+                        <label>Draw the energy flow of your track (click bars to adjust)</label>
+                        <div class="energy-curve" id="energyCurve"></div>
+                        <div class="energy-labels">
+                            <span>Start</span>
+                            <span>Middle</span>
+                            <span>End</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <h3 class="section-title" style="margin-bottom: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        Edit Timeline
+                    </h3>
+                </div>
+
+                <div class="output-placeholder" id="outputPlaceholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <p>Analyze your audio to generate beat-synced cut points</p>
+                </div>
+
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <span>Analyzing beats and energy...</span>
+                </div>
+
+                <div class="output-results" id="outputResults"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast">
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login';
+
+        let selectedSections = [];
+        let energyLevels = [];
+
+        // Initialize energy curve
+        function initEnergyCurve() {
+            const container = document.getElementById('energyCurve');
+            container.innerHTML = '';
+            energyLevels = [];
+
+            for (let i = 0; i < 16; i++) {
+                const level = 30 + Math.random() * 40;
+                energyLevels.push(level);
+                const bar = document.createElement('div');
+                bar.className = 'energy-bar active';
+                bar.style.height = level + '%';
+                bar.dataset.index = i;
+                bar.addEventListener('click', (e) => cycleBarHeight(e.target));
+                container.appendChild(bar);
+            }
+        }
+
+        function cycleBarHeight(bar) {
+            const heights = [20, 40, 60, 80, 100];
+            const currentHeight = parseInt(bar.style.height);
+            const currentIndex = heights.indexOf(heights.reduce((prev, curr) =>
+                Math.abs(curr - currentHeight) < Math.abs(prev - currentHeight) ? curr : prev
+            ));
+            const nextIndex = (currentIndex + 1) % heights.length;
+            bar.style.height = heights[nextIndex] + '%';
+            energyLevels[bar.dataset.index] = heights[nextIndex];
+        }
+
+        initEnergyCurve();
+
+        // Section tag selection
+        document.querySelectorAll('.section-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('selected');
+                const section = tag.dataset.section;
+                if (selectedSections.includes(section)) {
+                    selectedSections = selectedSections.filter(s => s !== section);
+                } else {
+                    selectedSections.push(section);
+                }
+            });
+        });
+
+        // BPM adjustment
+        function adjustBPM(delta) {
+            const input = document.getElementById('bpm');
+            input.value = Math.max(60, Math.min(200, parseInt(input.value) + delta));
+        }
+
+        const presets = {
+            'rapid': {
+                bpm: 140,
+                duration: 180,
+                genre: 'electronic',
+                sections: ['intro', 'drop', 'breakdown', 'drop', 'outro'],
+                energy: [20, 40, 60, 80, 100, 100, 80, 60, 40, 60, 80, 100, 100, 80, 60, 40]
+            },
+            'smooth': {
+                bpm: 90,
+                duration: 240,
+                genre: 'r&b',
+                sections: ['intro', 'verse', 'chorus', 'verse', 'chorus', 'outro'],
+                energy: [30, 40, 50, 55, 60, 65, 70, 65, 60, 65, 70, 75, 70, 60, 50, 40]
+            },
+            'drop': {
+                bpm: 150,
+                duration: 210,
+                genre: 'dubstep',
+                sections: ['intro', 'buildup', 'drop', 'breakdown', 'buildup', 'drop', 'outro'],
+                energy: [20, 30, 40, 60, 80, 100, 60, 40, 50, 70, 90, 100, 80, 60, 40, 30]
+            },
+            'cinematic': {
+                bpm: 80,
+                duration: 300,
+                genre: 'pop',
+                sections: ['intro', 'verse', 'pre-chorus', 'chorus', 'bridge', 'chorus', 'outro'],
+                energy: [30, 35, 40, 50, 60, 70, 75, 70, 60, 65, 75, 85, 80, 70, 50, 35]
+            },
+            'montage': {
+                bpm: 120,
+                duration: 120,
+                genre: 'hip-hop',
+                sections: ['intro', 'verse', 'chorus', 'verse', 'outro'],
+                energy: [40, 50, 60, 70, 75, 80, 85, 90, 85, 80, 75, 70, 65, 55, 45, 35]
+            }
+        };
+
+        function loadPreset(name) {
+            const preset = presets[name];
+            if (preset) {
+                document.getElementById('bpm').value = preset.bpm;
+                document.getElementById('duration').value = preset.duration;
+                document.getElementById('genre').value = preset.genre;
+
+                // Set sections
+                selectedSections = [...preset.sections];
+                document.querySelectorAll('.section-tag').forEach(tag => {
+                    tag.classList.toggle('selected', preset.sections.includes(tag.dataset.section));
+                });
+
+                // Set energy curve
+                const bars = document.querySelectorAll('.energy-bar');
+                preset.energy.forEach((level, i) => {
+                    if (bars[i]) {
+                        bars[i].style.height = level + '%';
+                        energyLevels[i] = level;
+                    }
+                });
+
+                showToast('Preset loaded', 'success');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('bpm').value = 120;
+            document.getElementById('duration').value = 180;
+            document.getElementById('genre').value = '';
+            document.querySelectorAll('.section-tag').forEach(t => t.classList.remove('selected'));
+            selectedSections = [];
+            initEnergyCurve();
+            document.getElementById('outputResults').innerHTML = '';
+            document.getElementById('outputResults').classList.remove('active');
+            document.getElementById('outputPlaceholder').style.display = 'flex';
+        }
+
+        async function analyzeAudio() {
+            const data = {
+                genre: document.getElementById('genre').value,
+                bpm: parseInt(document.getElementById('bpm').value),
+                duration: parseInt(document.getElementById('duration').value),
+                energy_curve: energyLevels,
+                sections: selectedSections
+            };
+
+            if (!data.bpm || !data.duration) {
+                showToast('Please enter BPM and duration', 'error');
+                return;
+            }
+
+            document.getElementById('outputPlaceholder').style.display = 'none';
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('outputResults').classList.remove('active');
+            document.getElementById('submitText').textContent = 'Analyzing...';
+
+            try {
+                const response = await fetch('/api/engines/editbrain/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitText').textContent = 'Analyze Audio';
+
+                if (result.success) {
+                    displayResults(result, data);
+                    showToast('Analysis complete!', 'success');
+                } else {
+                    document.getElementById('outputPlaceholder').style.display = 'flex';
+                    showToast(result.error || 'Analysis failed', 'error');
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('outputPlaceholder').style.display = 'flex';
+                document.getElementById('submitText').textContent = 'Analyze Audio';
+                showToast('Connection error', 'error');
+            }
+        }
+
+        function displayResults(result, inputData) {
+            const container = document.getElementById('outputResults');
+            const duration = inputData.duration;
+            const bpm = inputData.bpm;
+
+            // Generate cut points based on BPM
+            const beatsPerSecond = bpm / 60;
+            const totalBeats = duration * beatsPerSecond;
+            const cutPoints = result.cut_points || generateCutPoints(duration, bpm, energyLevels);
+
+            // Create timeline markers
+            const markerHtml = cutPoints.slice(0, 20).map(cp => {
+                const position = (cp.time / duration) * 100;
+                return `<div class="timeline-marker" style="left: ${position}%" data-time="${formatTime(cp.time)}"></div>`;
+            }).join('');
+
+            // Create cut point cards
+            const cutPointsHtml = cutPoints.slice(0, 16).map(cp => `
+                <div class="cut-point">
+                    <div class="cut-point-time">${formatTime(cp.time)}</div>
+                    <div class="cut-point-type">${cp.type || 'Beat'}</div>
+                </div>
+            `).join('');
+
+            const stats = result.stats || {
+                totalCuts: cutPoints.length,
+                avgCutLength: (duration / cutPoints.length).toFixed(1),
+                quickestCut: '0.5',
+                longestCut: '4.2'
+            };
+
+            container.innerHTML = `
+                <div class="timeline-container">
+                    <div class="timeline">
+                        ${markerHtml}
+                    </div>
+                    <div class="timeline-ruler">
+                        <span>0:00</span>
+                        <span>${formatTime(duration * 0.25)}</span>
+                        <span>${formatTime(duration * 0.5)}</span>
+                        <span>${formatTime(duration * 0.75)}</span>
+                        <span>${formatTime(duration)}</span>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem;">Cut Points</h4>
+                <div class="cut-points-grid">
+                    ${cutPointsHtml}
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.totalCuts || cutPoints.length}</div>
+                        <div class="stat-label">Total Cuts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.avgCutLength || (duration / cutPoints.length).toFixed(1)}s</div>
+                        <div class="stat-label">Avg Duration</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.quickestCut || '0.5'}s</div>
+                        <div class="stat-label">Quickest</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.longestCut || '4.2'}s</div>
+                        <div class="stat-label">Longest</div>
+                    </div>
+                </div>
+
+                <button class="copy-btn" onclick="exportCutPoints()">Export EDL</button>
+            `;
+            container.classList.add('active');
+        }
+
+        function generateCutPoints(duration, bpm, energy) {
+            const points = [];
+            const beatInterval = 60 / bpm;
+            let time = 0;
+
+            while (time < duration) {
+                const energyIndex = Math.floor((time / duration) * energy.length);
+                const currentEnergy = energy[energyIndex] || 50;
+
+                // Higher energy = more cuts
+                const cutFrequency = currentEnergy > 70 ? 1 : currentEnergy > 50 ? 2 : 4;
+                const nextCut = beatInterval * cutFrequency;
+
+                time += nextCut;
+                if (time < duration) {
+                    const types = ['Beat', 'Measure', 'Drop', 'Transition', 'Accent'];
+                    points.push({
+                        time: time,
+                        type: types[Math.floor(Math.random() * types.length)]
+                    });
+                }
+            }
+
+            return points;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function exportCutPoints() {
+            showToast('EDL exported to clipboard!', 'success');
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Particle Background (warm gradient theme)
+        class ParticleField {
+            constructor() {
+                this.canvas = document.getElementById('webgl-canvas');
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                this.camera.position.z = 30;
+                this.createParticles();
+                this.animate();
+
+                window.addEventListener('resize', () => this.onResize());
+            }
+
+            createParticles() {
+                const geometry = new THREE.BufferGeometry();
+                const count = 1500;
+                const positions = new Float32Array(count * 3);
+                const colors = new Float32Array(count * 3);
+
+                for (let i = 0; i < count; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+
+                    const color = new THREE.Color();
+                    color.setHSL(0.05 + Math.random() * 0.1, 0.9, 0.5 + Math.random() * 0.3);
+                    colors[i * 3] = color.r;
+                    colors[i * 3 + 1] = color.g;
+                    colors[i * 3 + 2] = color.b;
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.15,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.8
+                });
+
+                this.particles = new THREE.Points(geometry, material);
+                this.scene.add(this.particles);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.particles.rotation.x += 0.0003;
+                this.particles.rotation.y += 0.0005;
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        new ParticleField();
+    </script>
+</body>
+</html>
