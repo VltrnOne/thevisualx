@@ -20,6 +20,10 @@
             --accent-glow: rgba(99, 102, 241, 0.4);
             --border-color: rgba(255, 255, 255, 0.08);
             --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --vltrn-primary: #7c3aed;
+            --vltrn-secondary: #a855f7;
+            --vltrn-glow: rgba(124, 58, 237, 0.5);
+            --vltrn-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
         }
 
         * {
@@ -80,6 +84,14 @@
             letter-spacing: 0.3em;
             text-transform: uppercase;
             color: var(--text-primary);
+        }
+
+        .logo .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
         }
 
         .nav-links {
@@ -496,7 +508,7 @@
     <!-- Loading Screen -->
     <div id="loader">
         <div class="loader-content">
-            <div class="logo">VISUALX</div>
+            <div class="logo"><span class="v">V</span>ISUALX</div>
             <div class="loader-bar">
                 <div class="loader-progress" id="loader-progress"></div>
             </div>
@@ -510,11 +522,11 @@
     <div id="stage">
         <!-- Navigation -->
         <nav>
-            <div class="logo">VISUALX</div>
+            <div class="logo"><span class="v">V</span>ISUALX</div>
             <ul class="nav-links">
                 <li><a href="#engines" data-section="1">Engines</a></li>
                 <li><a href="#projects" data-section="2">Projects</a></li>
-                <li><a href="#about" data-section="3">About</a></li>
+                <li><a href="/about">About</a></li>
             </ul>
             <div class="nav-auth" id="navAuth">
                 <a href="/login">Sign In</a>
