@@ -6,7 +6,8 @@ const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
 const { initDatabase } = require('./database');
-const { signup, login, verify, authenticateToken } = require('./auth');
+const { signup, login, verify, authenticateToken, authenticateAdmin, adminLogin, adminVerify } = require('./auth');
+const { User } = require('./database');
 const EnginesClient = require('./engines_client');
 
 const app = express();
@@ -32,6 +33,65 @@ initDatabase().catch(err => {
 app.post('/api/auth/signup', signup);
 app.post('/api/auth/login', login);
 app.get('/api/auth/verify', authenticateToken, verify);
+
+// Admin authentication routes
+app.post('/api/admin/login', adminLogin);
+app.get('/api/admin/verify', authenticateToken, adminVerify);
+
+// Admin API routes
+app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+  try {
+    const users = await User.getAllUsers();
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+  try {
+    const stats = await User.getStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+app.put('/api/admin/users/:id/role', authenticateAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+    await User.updateRole(req.params.id, role);
+    res.json({ success: true, message: 'Role updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+app.put('/api/admin/users/:id/toggle', authenticateAdmin, async (req, res) => {
+  try {
+    const { is_active } = req.body;
+    await User.toggleActive(req.params.id, is_active);
+    res.json({ success: true, message: 'User status updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user status' });
+  }
+});
+
+app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+  try {
+    // Prevent self-deletion
+    if (parseInt(req.params.id) === req.user.id) {
+      return res.status(400).json({ error: 'Cannot delete yourself' });
+    }
+    await User.deleteUser(req.params.id);
+    res.json({ success: true, message: 'User deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
 
 // Protected route example
 app.get('/api/profile', authenticateToken, (req, res) => {
@@ -203,6 +263,18 @@ app.get('/signup', (req, res) => {
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
+
+app.get('/admin-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.get('/dashboard', (req, res) => {

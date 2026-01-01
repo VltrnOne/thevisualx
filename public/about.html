@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About - VISUALX | Powered by VLTRN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --vltrn-primary: #7c3aed;
+            --vltrn-secondary: #a855f7;
+            --vltrn-glow: rgba(124, 58, 237, 0.5);
+            --vltrn-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* WebGL Canvas */
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        .content {
+            position: relative;
+            z-index: 1;
+            padding-top: 120px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 100px;
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--vltrn-secondary);
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .hero-title .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            text-shadow: 0 0 60px var(--vltrn-glow);
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        /* VLTRN Section */
+        .vltrn-section {
+            padding: 100px 0;
+            background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.05), transparent);
+        }
+
+        .vltrn-logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+
+        .vltrn-logo {
+            font-size: 120px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            position: relative;
+        }
+
+        .vltrn-logo .v-letter {
+            display: inline-block;
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .vltrn-logo .v-letter::after {
+            content: 'V';
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(20px);
+            opacity: 0.6;
+            z-index: -1;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px var(--vltrn-glow)); }
+            50% { filter: drop-shadow(0 0 40px var(--vltrn-glow)); }
+        }
+
+        .vltrn-logo .other-letters {
+            color: var(--text-primary);
+        }
+
+        .vltrn-tagline {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 60px;
+        }
+
+        .vltrn-tagline strong {
+            color: var(--vltrn-secondary);
+            font-weight: 600;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 100px;
+        }
+
+        .feature-card {
+            background: rgba(17, 17, 17, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.4s var(--transition-smooth);
+        }
+
+        .feature-card:hover {
+            border-color: var(--vltrn-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(124, 58, 237, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--vltrn-gradient);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .feature-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-item .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-item .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Team Section */
+        .team-section {
+            padding: 100px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-title .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        /* Philosophy */
+        .philosophy-section {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .philosophy-quote {
+            font-size: 32px;
+            font-weight: 300;
+            line-height: 1.5;
+            max-width: 900px;
+            margin: 0 auto 40px;
+        }
+
+        .philosophy-quote .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .philosophy-author {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s var(--transition-smooth);
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--vltrn-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--vltrn-glow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--vltrn-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo .v {
+            background: var(--vltrn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer-text a {
+            color: var(--vltrn-secondary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 16px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero {
+                padding: 40px 0;
+            }
+
+            .vltrn-logo {
+                font-size: 60px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+
+    <nav>
+        <a href="/" class="logo"><span class="v">V</span>ISUALX</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/about" class="active">About</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/login">Sign In</a></li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div class="container">
+            <!-- Hero -->
+            <section class="hero">
+                <div class="hero-badge">
+                    <span class="v">V</span>LTRN Technology
+                </div>
+                <h1 class="hero-title">
+                    The Future of <span class="v">V</span>isual Creation
+                </h1>
+                <p class="hero-subtitle">
+                    VISUALX is an AI-powered visual creation platform designed for musicians,
+                    artists, and creators who demand more from their visual content.
+                </p>
+            </section>
+
+            <!-- VLTRN Section -->
+            <section class="vltrn-section">
+                <div class="vltrn-logo-container">
+                    <div class="vltrn-logo">
+                        <span class="v-letter">V</span><span class="other-letters">LTRN</span>
+                    </div>
+                </div>
+                <p class="vltrn-tagline">
+                    <strong>Vision. Logic. Technology. Revolution. Network.</strong><br>
+                    Building the infrastructure for creative sovereignty.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">AI-Powered Engines</h3>
+                        <p class="feature-desc">
+                            Six specialized AI engines work together to analyze your music,
+                            understand your vision, and generate stunning visuals that resonate
+                            with your audience.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Demographic Research</h3>
+                        <p class="feature-desc">
+                            Our agent team researches your target audience to create visuals
+                            that speak directly to your fans. Every image is crafted with
+                            intention and data-driven insights.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎬</div>
+                        <h3 class="feature-title">Cinematic Quality</h3>
+                        <p class="feature-desc">
+                            From color grading to shot design, every element is treated with
+                            the care and precision of a Hollywood production. Your music
+                            deserves nothing less.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Instant Creation</h3>
+                        <p class="feature-desc">
+                            What used to take weeks now takes minutes. Generate album artwork,
+                            promotional stills, and video concepts at the speed of thought.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">AI Engines</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">∞</div>
+                        <div class="stat-label">Possibilities</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">1</div>
+                        <div class="stat-label">Platform</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Limits</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Philosophy -->
+            <section class="philosophy-section">
+                <blockquote class="philosophy-quote">
+                    "We believe every artist deserves access to <span class="v">V</span>isual
+                    tools that match their <span class="v">V</span>ision. Technology should
+                    amplify creativity, not constrain it."
+                </blockquote>
+                <p class="philosophy-author">— The VLTRN Team</p>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section">
+                <h2 class="cta-title">Ready to Create?</h2>
+                <div class="cta-buttons">
+                    <a href="/signup" class="btn btn-primary">Get Started Free</a>
+                    <a href="/dashboard" class="btn btn-secondary">Explore Engines</a>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="footer-logo"><span class="v">V</span>ISUALX</div>
+            <p class="footer-text">
+                Powered by <a href="#">VLTRN</a> · Built for Creators
+            </p>
+        </footer>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // WebGL Particle Background
+        const canvas = document.getElementById('webgl-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Particles with VLTRN purple theme
+        const geometry = new THREE.BufferGeometry();
+        const count = 2000;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+
+        for(let i = 0; i < count * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 25;
+            positions[i + 1] = (Math.random() - 0.5) * 25;
+            positions[i + 2] = (Math.random() - 0.5) * 25;
+
+            // VLTRN purple/violet gradient
+            const t = Math.random();
+            colors[i] = 0.48 + t * 0.18;     // R (purple to pink)
+            colors[i + 1] = 0.22 + t * 0.11; // G
+            colors[i + 2] = 0.92 + t * 0.08; // B (high blue for violet)
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.04,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        camera.position.z = 6;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.0002;
+            particles.rotation.x += 0.0001;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

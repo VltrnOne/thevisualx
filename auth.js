@@ -19,7 +19,7 @@ async function comparePassword(password, hashedPassword) {
 // Generate JWT token
 function generateToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role || 'user' },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
@@ -154,11 +154,103 @@ function verify(req, res) {
   });
 }
 
+// Admin authentication middleware
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(403).json({ error: 'Invalid or expired token.' });
+  }
+
+  if (decoded.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+
+  req.user = decoded;
+  next();
+}
+
+// Admin login handler
+async function adminLogin(req, res) {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account is deactivated' });
+    }
+
+    const isValidPassword = await comparePassword(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    await User.updateLastLogin(user.id);
+    const token = generateToken(user);
+
+    res.json({
+      message: 'Admin login successful',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('❌ Admin login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// Admin verify endpoint
+async function adminVerify(req, res) {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ valid: false, error: 'Admin access required' });
+    }
+    res.json({
+      valid: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ valid: false, error: 'Verification failed' });
+  }
+}
+
 module.exports = {
   signup,
   login,
   verify,
   authenticateToken,
+  authenticateAdmin,
+  adminLogin,
+  adminVerify,
   hashPassword,
   comparePassword,
   generateToken,
