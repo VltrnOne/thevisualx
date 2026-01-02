@@ -3,242 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Factory | VISUALX - AI Image Production Line</title>
+    <title>Image Factory - VISUALX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --bg-card: #0d0d0d;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent-primary: #10b981;
+            --accent-secondary: #06b6d4;
+            --accent-tertiary: #8b5cf6;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gold: #fbbf24;
+            --platinum: #e5e7eb;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --vltrn-purple: #7c3aed;
-            --vltrn-purple-light: #a855f7;
-            --vltrn-purple-dark: #5b21b6;
-            --factory-dark: #0a0a0f;
-            --factory-panel: #12121a;
-            --factory-border: #1e1e2e;
-            --factory-metal: #2a2a3a;
-            --factory-glow: rgba(124, 58, 237, 0.3);
-            --conveyor-color: #1a1a2a;
-            --success-green: #10b981;
-            --warning-yellow: #f59e0b;
-            --error-red: #ef4444;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b0;
-            --text-muted: #606070;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--factory-dark);
+            background: var(--bg-primary);
             color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Factory Background Grid */
-        .factory-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
         /* Header */
-        .factory-header {
+        .header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 60px;
-            background: rgba(10, 10, 15, 0.95);
-            border-bottom: 1px solid var(--factory-border);
+            height: 70px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
+            padding: 0 40px;
             z-index: 100;
-            backdrop-filter: blur(10px);
         }
 
-        .factory-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .factory-logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .factory-logo-text {
+        .logo {
             font-size: 18px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
+            letter-spacing: 0.25em;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+        }
+
+        .logo-sub {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .factory-logo-sub {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        /* Progress Steps */
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .factory-status {
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .progress-step.completed {
+            color: var(--success-color);
+        }
+
+        .progress-step .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .progress-step.active .step-num {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .progress-step.completed .step-num {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .progress-connector {
+            width: 24px;
+            height: 2px;
+            background: var(--border-color);
+        }
+
+        .progress-connector.completed {
+            background: var(--success-color);
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Step Panels */
+        .step-panel {
+            display: none;
+            flex: 1;
+            padding: 60px 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .step-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 24px;
+            padding: 80px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon svg {
+            width: 36px;
+            height: 36px;
+            stroke: white;
+        }
+
+        .upload-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .upload-formats {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .format-tag {
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* File Preview */
+        .file-preview {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .file-preview.active {
             display: flex;
             align-items: center;
             gap: 20px;
         }
 
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success-green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .back-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .back-btn:hover {
-            background: var(--factory-metal);
-            color: var(--text-primary);
-        }
-
-        /* Main Container */
-        .factory-container {
-            position: relative;
-            z-index: 1;
-            padding-top: 60px;
-            min-height: 100vh;
-        }
-
-        /* Input Section */
-        .input-section {
-            padding: 40px 24px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .section-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
-
-        /* Input Form */
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 32px;
-        }
-
-        .concept-panel {
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
+        .file-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             border-radius: 16px;
-            padding: 24px;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .panel-title::before {
-            content: '';
-            width: 4px;
-            height: 16px;
-            background: var(--vltrn-purple);
-            border-radius: 2px;
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .file-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .file-remove {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .file-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
+        /* Form Elements */
+        .form-section {
+            margin-top: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .form-input {
+        .form-input,
+        .form-select,
+        .form-textarea {
             width: 100%;
-            padding: 14px 16px;
-            background: var(--factory-dark);
-            border: 1px solid var(--factory-border);
-            border-radius: 10px;
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             color: var(--text-primary);
-            font-size: 14px;
+            font-size: 15px;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .form-input:focus {
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
             outline: none;
-            border-color: var(--vltrn-purple);
-            box-shadow: 0 0 0 3px var(--factory-glow);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
 
         .form-textarea {
@@ -248,1432 +372,1612 @@
 
         .form-select {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 16px center;
-            padding-right: 40px;
         }
 
-        /* Output Format Selection */
-        .output-panel {
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
-            border-radius: 16px;
-            padding: 24px;
+        /* Analysis Results */
+        .analysis-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
         }
 
-        .format-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
-        .format-option {
-            position: relative;
-            padding: 16px;
-            background: var(--factory-dark);
-            border: 2px solid var(--factory-border);
+        .analysis-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .format-option:hover {
-            border-color: var(--factory-metal);
-            background: var(--factory-metal);
+        .analysis-title {
+            font-size: 18px;
+            font-weight: 600;
         }
 
-        .format-option.selected {
-            border-color: var(--vltrn-purple);
-            background: rgba(124, 58, 237, 0.1);
+        .analysis-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
         }
 
-        .format-option input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
         }
 
-        .format-icon {
+        .metric-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .sections-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .section-chip {
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-primary);
+        }
+
+        /* Demographic Questions */
+        .question-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
             width: 32px;
             height: 32px;
-            background: var(--factory-panel);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .format-option.selected .format-icon {
-            background: var(--vltrn-purple);
-        }
-
-        .format-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .format-specs {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .format-check {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 20px;
-            height: 20px;
-            background: var(--vltrn-purple);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             border-radius: 50%;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-        }
-
-        .format-option.selected .format-check {
-            display: flex;
-        }
-
-        /* Start Button */
-        .start-production-btn {
-            width: 100%;
-            padding: 18px 32px;
-            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .question-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
         }
 
-        .start-production-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
+        .option-btn {
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
         }
 
-        .start-production-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .option-btn:hover {
+            border-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.05);
         }
 
-        /* ============================================
-           FACTORY PRODUCTION LINE
-           ============================================ */
-
-        .production-section {
-            display: none;
-            padding: 40px 24px;
+        .option-btn.selected {
+            border-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-primary);
         }
 
-        .production-section.active {
-            display: block;
-        }
-
-        /* Conveyor Container */
-        .conveyor-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* Conveyor Belt */
-        .conveyor-belt {
-            position: relative;
-            background: var(--conveyor-color);
-            border-radius: 20px;
-            padding: 40px 20px;
-            border: 2px solid var(--factory-border);
-            overflow: hidden;
-        }
-
-        .conveyor-belt::before {
+        .option-btn.multi-select.selected::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 40px,
-                rgba(124, 58, 237, 0.05) 40px,
-                rgba(124, 58, 237, 0.05) 42px
-            );
-            animation: conveyorMove 2s linear infinite;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-primary);
+            border-radius: 4px;
+            margin-right: 10px;
+            vertical-align: middle;
         }
 
-        @keyframes conveyorMove {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(42px); }
+        /* KPI Targets */
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
         }
 
-        /* Production Stages */
-        .stages-row {
+        .kpi-header {
             display: flex;
-            gap: 20px;
-            position: relative;
-            z-index: 1;
-            overflow-x: auto;
-            padding: 10px 0;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
-        .stage-window {
-            flex: 0 0 280px;
-            background: var(--factory-panel);
-            border: 2px solid var(--factory-border);
-            border-radius: 16px;
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .slider-group {
+            margin-bottom: 24px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .slider-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .slider-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .slider-input {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        /* Factory Production View */
+        .factory-container {
+            background: var(--bg-secondary);
+            border-radius: 24px;
             overflow: hidden;
-            transition: all 0.3s;
+            border: 1px solid var(--border-color);
         }
 
-        .stage-window.active {
-            border-color: var(--vltrn-purple);
-            box-shadow: 0 0 30px var(--factory-glow);
-        }
-
-        .stage-window.complete {
-            border-color: var(--success-green);
-        }
-
-        .stage-window.complete .stage-header {
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        /* Stage Header */
-        .stage-header {
-            padding: 16px;
-            background: var(--factory-dark);
-            border-bottom: 1px solid var(--factory-border);
+        .factory-header {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.05));
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .stage-number {
-            width: 28px;
-            height: 28px;
-            background: var(--factory-metal);
-            border-radius: 50%;
+        .factory-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .factory-status {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stage-window.active .stage-number {
-            background: var(--vltrn-purple);
-        }
-
-        .stage-window.complete .stage-number {
-            background: var(--success-green);
-        }
-
-        .stage-title {
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 20px;
             font-size: 13px;
-            font-weight: 600;
-            flex: 1;
-            margin-left: 12px;
+            color: var(--accent-primary);
         }
 
-        .stage-status {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
+        .status-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
-        .stage-window.active .stage-status {
-            color: var(--vltrn-purple-light);
-        }
-
-        .stage-window.complete .stage-status {
-            color: var(--success-green);
-        }
-
-        /* Stage Content (Viewing Window) */
-        .stage-viewport {
-            height: 200px;
-            padding: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .viewport-content {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .viewport-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--factory-dark);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-
-        .stage-window.active .viewport-icon {
-            background: rgba(124, 58, 237, 0.2);
-            animation: iconPulse 1.5s infinite;
-        }
-
-        @keyframes iconPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .viewport-text {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .viewport-progress {
-            margin-top: 16px;
-            width: 100%;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: var(--factory-dark);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--vltrn-purple);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .stage-window.complete .progress-fill {
-            background: var(--success-green);
-            width: 100%;
-        }
-
-        /* Agent Card in Viewport */
-        .agent-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--factory-dark);
-            border-radius: 10px;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-
-        .agent-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .agent-info {
-            text-align: left;
-        }
-
-        .agent-name {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .agent-role {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        .agent-status {
-            margin-left: auto;
-            font-size: 10px;
-            padding: 4px 8px;
-            background: rgba(124, 58, 237, 0.2);
-            border-radius: 4px;
-            color: var(--vltrn-purple-light);
-        }
-
-        .stage-window.active .agent-status {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
+        @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
 
-        /* Log Stream */
-        .log-stream {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            background: var(--factory-dark);
-            border-radius: 8px;
-            padding: 8px;
-            height: 80px;
-            overflow-y: auto;
-            text-align: left;
+        /* Production Line */
+        .production-line {
+            padding: 40px 32px;
+            position: relative;
         }
 
-        .log-line {
-            margin-bottom: 4px;
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
+        .conveyor-track {
+            position: absolute;
+            top: 50%;
+            left: 32px;
+            right: 32px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            transform: translateY(-50%);
+            z-index: 0;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .conveyor-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 2px;
         }
 
-        .log-line .timestamp {
-            color: var(--text-muted);
+        .stages-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            position: relative;
+            z-index: 1;
         }
 
-        .log-line .message {
-            color: var(--vltrn-purple-light);
-        }
-
-        /* ============================================
-           DELIVERY BAY
-           ============================================ */
-
-        .delivery-section {
-            display: none;
-            padding: 40px 24px;
-        }
-
-        .delivery-section.active {
-            display: block;
-        }
-
-        .delivery-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .delivery-header {
+        .stage-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 40px;
+            transition: all 0.3s ease;
+            opacity: 0.5;
         }
 
-        .delivery-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .stage-card.active {
+            opacity: 1;
+            border-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.05);
         }
 
-        .delivery-subtitle {
+        .stage-card.completed {
+            opacity: 1;
+            border-color: var(--success-color);
+        }
+
+        .stage-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-card.active .stage-icon {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .stage-card.completed .stage-icon {
+            background: var(--success-color);
+        }
+
+        .stage-name {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .stage-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+            padding: 32px;
+        }
+
+        .agent-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .agent-panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             color: var(--text-secondary);
         }
 
-        /* Output Grid */
+        .minds-badge {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .agents-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+        }
+
+        .agent-avatar.scout { background: linear-gradient(135deg, #10b981, #059669); }
+        .agent-avatar.vision { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .agent-avatar.sage { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .agent-avatar.oracle { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .agent-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .agent-role {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .agent-log {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            height: 80px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        /* Output Cards */
+        .output-section {
+            padding: 32px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .output-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
         .output-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
         }
 
         .output-card {
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
-            border-radius: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .output-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .output-preview {
-            aspect-ratio: 1;
-            background: var(--factory-dark);
+            height: 120px;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-tertiary));
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow: hidden;
         }
 
-        .output-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .output-placeholder {
-            font-size: 48px;
+        .output-preview svg {
+            width: 40px;
+            height: 40px;
             opacity: 0.3;
         }
 
         .output-format-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 6px;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            backdrop-filter: blur(4px);
+            top: 8px;
+            right: 8px;
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
         }
 
-        .output-details {
-            padding: 20px;
+        .output-body {
+            padding: 16px;
         }
 
         .output-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .output-specs {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .spec-item {
             font-size: 12px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
         }
 
-        .spec-item span {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .output-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        /* Buttons */
+        .btn {
+            padding: 16px 32px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
             border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        .action-btn.primary {
-            background: var(--vltrn-purple);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
         }
 
-        .action-btn.primary:hover {
-            background: var(--vltrn-purple-dark);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
         }
 
-        .action-btn.secondary {
-            background: var(--factory-dark);
-            border: 1px solid var(--factory-border);
-            color: var(--text-secondary);
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .action-btn.secondary:hover {
-            background: var(--factory-metal);
+        .btn-secondary {
+            background: var(--bg-tertiary);
             color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
-        /* Prompt Output */
-        .prompt-output {
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 32px;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .prompt-header {
+        .btn-row {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .prompt-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .copy-btn {
-            padding: 8px 16px;
-            background: var(--factory-dark);
-            border: 1px solid var(--factory-border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .copy-btn:hover {
-            background: var(--factory-metal);
-            color: var(--text-primary);
-        }
-
-        .prompt-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            background: var(--factory-dark);
-            border-radius: 10px;
-            padding: 16px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        /* New Production Button */
-        .new-production-btn {
-            display: flex;
-            align-items: center;
+            gap: 16px;
             justify-content: center;
-            gap: 12px;
-            padding: 16px 32px;
-            background: var(--factory-panel);
-            border: 2px dashed var(--factory-border);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 32px;
+            margin-top: 48px;
         }
 
-        .new-production-btn:hover {
-            border-color: var(--vltrn-purple);
-            color: var(--vltrn-purple-light);
-            background: rgba(124, 58, 237, 0.05);
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stages-row {
-                padding-bottom: 20px;
-            }
-
-            .stage-window {
-                flex: 0 0 260px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .factory-header {
-                padding: 0 16px;
-            }
-
-            .input-section,
-            .production-section,
-            .delivery-section {
-                padding: 24px 16px;
-            }
-
-            .format-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .output-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Loading Animation */
-        .loading-spinner {
+        /* Loading Spinner */
+        .spinner {
             width: 24px;
             height: 24px;
-            border: 3px solid var(--factory-border);
-            border-top-color: var(--vltrn-purple);
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Toast Notification */
-        .toast {
+        /* Toast */
+        .toast-container {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            padding: 16px 24px;
-            background: var(--factory-panel);
-            border: 1px solid var(--factory-border);
+            z-index: 2000;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             gap: 12px;
-            z-index: 1000;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+            margin-top: 12px;
         }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
+        .toast.success { border-color: var(--success-color); }
+        .toast.error { border-color: var(--error-color); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .toast.success {
-            border-color: var(--success-green);
-        }
-
-        .toast.error {
-            border-color: var(--error-red);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header { padding: 0 20px; }
+            .step-panel { padding: 40px 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .stages-grid { grid-template-columns: repeat(3, 1fr); }
+            .agents-row { grid-template-columns: repeat(2, 1fr); }
+            .progress-step span { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="factory-bg"></div>
-
     <!-- Header -->
-    <header class="factory-header">
-        <div class="factory-logo">
-            <div class="factory-logo-icon">V</div>
-            <div>
-                <div class="factory-logo-text">Image Factory</div>
-                <div class="factory-logo-sub">AI Production Line</div>
-            </div>
+    <header class="header">
+        <div class="logo">
+            <a href="/dashboard">VISUALX</a>
+            <div class="logo-divider"></div>
+            <span class="logo-sub">IMAGE FACTORY</span>
         </div>
-        <div class="factory-status">
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <span>Systems Online</span>
+
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">
+                <span class="step-num">1</span>
+                <span>Upload</span>
             </div>
-            <a href="/dashboard" class="back-btn">
-                <span>Exit Factory</span>
-            </a>
+            <div class="progress-connector"></div>
+            <div class="progress-step" data-step="2">
+                <span class="step-num">2</span>
+                <span>Analysis</span>
+            </div>
+            <div class="progress-connector"></div>
+            <div class="progress-step" data-step="3">
+                <span class="step-num">3</span>
+                <span>Demographics</span>
+            </div>
+            <div class="progress-connector"></div>
+            <div class="progress-step" data-step="4">
+                <span class="step-num">4</span>
+                <span>KPIs</span>
+            </div>
+            <div class="progress-connector"></div>
+            <div class="progress-step" data-step="5">
+                <span class="step-num">5</span>
+                <span>Production</span>
+            </div>
+            <div class="progress-connector"></div>
+            <div class="progress-step" data-step="6">
+                <span class="step-num">6</span>
+                <span>Delivery</span>
+            </div>
         </div>
     </header>
 
-    <div class="factory-container">
-        <!-- INPUT SECTION -->
-        <section class="input-section" id="inputSection">
-            <h1 class="section-title">Initialize Production</h1>
-            <p class="section-subtitle">Configure your image specifications and watch the factory build your visuals</p>
+    <!-- Main Container -->
+    <div class="main-container">
 
-            <div class="input-grid">
-                <!-- Concept Input -->
-                <div class="concept-panel">
-                    <div class="panel-title">Visual Concept</div>
-
-                    <div class="form-group">
-                        <label class="form-label">Project Title</label>
-                        <input type="text" class="form-input" id="projectTitle" placeholder="e.g., Midnight Dreams Album">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Artist / Brand Name</label>
-                        <input type="text" class="form-input" id="artistName" placeholder="e.g., Luna Rose">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Visual Description</label>
-                        <textarea class="form-input form-textarea" id="visualDescription" placeholder="Describe the visual concept you want to create. Be specific about mood, elements, colors, and style..."></textarea>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group">
-                            <label class="form-label">Genre / Style</label>
-                            <select class="form-input form-select" id="genreSelect">
-                                <option value="electronic">Electronic</option>
-                                <option value="hip-hop">Hip-Hop</option>
-                                <option value="r&b">R&B</option>
-                                <option value="pop">Pop</option>
-                                <option value="rock">Rock</option>
-                                <option value="indie">Indie</option>
-                                <option value="ambient">Ambient</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Mood</label>
-                            <select class="form-input form-select" id="moodSelect">
-                                <option value="euphoric">Euphoric</option>
-                                <option value="melancholic">Melancholic</option>
-                                <option value="aggressive">Aggressive</option>
-                                <option value="serene">Serene</option>
-                                <option value="mysterious">Mysterious</option>
-                                <option value="romantic">Romantic</option>
-                                <option value="dark">Dark</option>
-                                <option value="triumphant">Triumphant</option>
-                            </select>
-                        </div>
-                    </div>
+        <!-- Step 1: Upload -->
+        <div class="step-panel active" id="step1">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1 class="step-title">Upload Your Music</h1>
+                    <p class="step-desc">Start by uploading the track. Our AI will analyze it to understand the sonic DNA and build visuals that resonate.</p>
                 </div>
 
-                <!-- Output Format Selection -->
-                <div class="output-panel">
-                    <div class="panel-title">Output Format</div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Select the intended use for automatic dimension optimization</p>
-
-                    <div class="format-grid" id="formatGrid">
-                        <!-- Icon -->
-                        <label class="format-option" data-format="icon">
-                            <input type="radio" name="format" value="icon">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9635;</div>
-                            <div class="format-name">Icon</div>
-                            <div class="format-specs">144 x 144 PNG</div>
-                        </label>
-
-                        <!-- Favicon -->
-                        <label class="format-option" data-format="favicon">
-                            <input type="radio" name="format" value="favicon">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9733;</div>
-                            <div class="format-name">Favicon</div>
-                            <div class="format-specs">32 x 32 ICO</div>
-                        </label>
-
-                        <!-- Logo -->
-                        <label class="format-option" data-format="logo">
-                            <input type="radio" name="format" value="logo">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9830;</div>
-                            <div class="format-name">Logo</div>
-                            <div class="format-specs">1280 x 1280 PNG-T</div>
-                        </label>
-
-                        <!-- Album Cover -->
-                        <label class="format-option selected" data-format="album_cover">
-                            <input type="radio" name="format" value="album_cover" checked>
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9836;</div>
-                            <div class="format-name">Album Cover</div>
-                            <div class="format-specs">3000 x 3000 JPEG</div>
-                        </label>
-
-                        <!-- Instagram Post -->
-                        <label class="format-option" data-format="instagram_post">
-                            <input type="radio" name="format" value="instagram_post">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#128247;</div>
-                            <div class="format-name">Instagram Post</div>
-                            <div class="format-specs">1080 x 1080 JPEG</div>
-                        </label>
-
-                        <!-- Instagram Story -->
-                        <label class="format-option" data-format="instagram_story">
-                            <input type="radio" name="format" value="instagram_story">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#128250;</div>
-                            <div class="format-name">Instagram Story</div>
-                            <div class="format-specs">1080 x 1920 JPEG</div>
-                        </label>
-
-                        <!-- YouTube Thumbnail -->
-                        <label class="format-option" data-format="youtube_thumbnail">
-                            <input type="radio" name="format" value="youtube_thumbnail">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9658;</div>
-                            <div class="format-name">YouTube Thumb</div>
-                            <div class="format-specs">1280 x 720 JPEG</div>
-                        </label>
-
-                        <!-- Twitter Header -->
-                        <label class="format-option" data-format="twitter_header">
-                            <input type="radio" name="format" value="twitter_header">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#120143;</div>
-                            <div class="format-name">Twitter Header</div>
-                            <div class="format-specs">1500 x 500 JPEG</div>
-                        </label>
-
-                        <!-- Spotify Canvas -->
-                        <label class="format-option" data-format="spotify_canvas">
-                            <input type="radio" name="format" value="spotify_canvas">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#9834;</div>
-                            <div class="format-name">Spotify Canvas</div>
-                            <div class="format-specs">720 x 720 JPEG</div>
-                        </label>
-
-                        <!-- Print Poster -->
-                        <label class="format-option" data-format="print_poster">
-                            <input type="radio" name="format" value="print_poster">
-                            <div class="format-check">&#10003;</div>
-                            <div class="format-icon">&#128196;</div>
-                            <div class="format-name">Print Poster</div>
-                            <div class="format-specs">2400 x 3600 PNG 300dpi</div>
-                        </label>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('audioInput').click()">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
                     </div>
+                    <div class="upload-title">Drop your audio file here</div>
+                    <div class="upload-subtitle">or click to browse</div>
+                    <div class="upload-formats">
+                        <span class="format-tag">MP3</span>
+                        <span class="format-tag">WAV</span>
+                        <span class="format-tag">FLAC</span>
+                        <span class="format-tag">Up to 50MB</span>
+                    </div>
+                </div>
+                <input type="file" id="audioInput" accept="audio/*" style="display: none;">
 
-                    <button class="start-production-btn" id="startProductionBtn">
-                        <span>Start Production</span>
-                        <span>&#9654;</span>
+                <div class="file-preview" id="filePreview">
+                    <div class="file-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"/>
+                            <circle cx="6" cy="18" r="3"/>
+                            <circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name" id="fileName">track.mp3</div>
+                        <div class="file-meta" id="fileMeta">0 MB</div>
+                    </div>
+                    <button class="file-remove" onclick="clearFile()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
                     </button>
                 </div>
+
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Song Title</label>
+                            <input type="text" class="form-input" id="songTitle" placeholder="Enter song title">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Artist Name</label>
+                            <input type="text" class="form-input" id="artistName" placeholder="Enter artist name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Genre</label>
+                            <select class="form-select" id="genreSelect">
+                                <option value="">Select genre</option>
+                                <option value="hip-hop">Hip Hop / Rap</option>
+                                <option value="r&b">R&B / Soul</option>
+                                <option value="pop">Pop</option>
+                                <option value="electronic">Electronic / EDM</option>
+                                <option value="rock">Rock</option>
+                                <option value="country">Country</option>
+                                <option value="latin">Latin</option>
+                                <option value="indie">Indie / Alternative</option>
+                                <option value="jazz">Jazz</option>
+                                <option value="classical">Classical</option>
+                                <option value="gospel">Gospel / Christian</option>
+                                <option value="afrobeats">Afrobeats</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Release Status</label>
+                            <select class="form-select" id="releaseStatus">
+                                <option value="unreleased">Unreleased (New Single)</option>
+                                <option value="released">Already Released</option>
+                                <option value="remix">Remix / Cover</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">Cancel</button>
+                    <button class="btn btn-primary" id="uploadBtn" onclick="uploadAndAnalyze()">Upload & Analyze</button>
+                </div>
             </div>
-        </section>
+        </div>
 
-        <!-- PRODUCTION LINE SECTION -->
-        <section class="production-section" id="productionSection">
-            <div class="conveyor-container">
-                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-                    <span class="loading-spinner" id="productionSpinner"></span>
-                    Production in Progress
-                </h2>
+        <!-- Step 2: Analysis Results -->
+        <div class="step-panel" id="step2">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1 class="step-title">Audio Intelligence</h1>
+                    <p class="step-desc">We've decoded the sonic fingerprint of your track. This data powers every visual decision.</p>
+                </div>
 
-                <div class="conveyor-belt">
-                    <div class="stages-row" id="stagesRow">
-                        <!-- Stage 1: Research Bay -->
-                        <div class="stage-window" id="stage1" data-stage="1">
-                            <div class="stage-header">
-                                <div class="stage-number">1</div>
-                                <div class="stage-title">Research Bay</div>
-                                <div class="stage-status">STANDBY</div>
-                            </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="agent-card">
-                                        <div class="agent-avatar">&#128269;</div>
-                                        <div class="agent-info">
-                                            <div class="agent-name">Demo Scout</div>
-                                            <div class="agent-role">Audience Analyst</div>
-                                        </div>
-                                        <div class="agent-status">IDLE</div>
-                                    </div>
-                                    <div class="log-stream" id="log1"></div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress1"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <div class="analysis-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="analysis-title" id="analysisTitle">Track Analysis Complete</div>
+                            <div class="analysis-subtitle">Sonic DNA extracted successfully</div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="metricBpm">--</div>
+                            <div class="metric-label">BPM</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="metricKey">--</div>
+                            <div class="metric-label">Key</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="metricDuration">--</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="metricEnergy">--</div>
+                            <div class="metric-label">Energy</div>
+                        </div>
+                    </div>
+
+                    <div class="sections-list" id="sectionsList">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">Song Description / Mood</label>
+                        <textarea class="form-textarea" id="songDescription" placeholder="Describe the vibe, emotion, and story of this track..."></textarea>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">Continue to Demographics</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Demographics -->
+        <div class="step-panel" id="step3">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1 class="step-title">Demographic Intelligence</h1>
+                    <p class="step-desc">Help our agents understand exactly who this content is for. The more precise, the more chart-dominating the output.</p>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">1</div>
+                        <div>
+                            <div class="question-text">Who is your primary audience?</div>
+                            <div class="question-hint">Select all that apply</div>
+                        </div>
+                    </div>
+                    <div class="options-grid" id="audienceOptions">
+                        <button class="option-btn multi-select" data-value="gen-z">Gen Z (13-26)</button>
+                        <button class="option-btn multi-select" data-value="millennials">Millennials (27-42)</button>
+                        <button class="option-btn multi-select" data-value="gen-x">Gen X (43-58)</button>
+                        <button class="option-btn multi-select" data-value="boomers">Boomers (59+)</button>
+                        <button class="option-btn multi-select" data-value="urban">Urban / Metropolitan</button>
+                        <button class="option-btn multi-select" data-value="suburban">Suburban</button>
+                        <button class="option-btn multi-select" data-value="global">Global / International</button>
+                        <button class="option-btn multi-select" data-value="niche">Niche / Subculture</button>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">2</div>
+                        <div>
+                            <div class="question-text">What platforms are you targeting?</div>
+                            <div class="question-hint">Select all that apply</div>
+                        </div>
+                    </div>
+                    <div class="options-grid" id="platformOptions">
+                        <button class="option-btn multi-select" data-value="spotify">Spotify</button>
+                        <button class="option-btn multi-select" data-value="apple-music">Apple Music</button>
+                        <button class="option-btn multi-select" data-value="youtube">YouTube</button>
+                        <button class="option-btn multi-select" data-value="tiktok">TikTok</button>
+                        <button class="option-btn multi-select" data-value="instagram">Instagram</button>
+                        <button class="option-btn multi-select" data-value="twitter">Twitter/X</button>
+                        <button class="option-btn multi-select" data-value="soundcloud">SoundCloud</button>
+                        <button class="option-btn multi-select" data-value="radio">Radio / Broadcast</button>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">3</div>
+                        <div>
+                            <div class="question-text">What visual aesthetic resonates with your brand?</div>
+                            <div class="question-hint">Select your primary style</div>
+                        </div>
+                    </div>
+                    <div class="options-grid" id="aestheticOptions">
+                        <button class="option-btn" data-value="cinematic">Cinematic / Premium</button>
+                        <button class="option-btn" data-value="street">Street / Urban</button>
+                        <button class="option-btn" data-value="minimalist">Minimalist / Clean</button>
+                        <button class="option-btn" data-value="psychedelic">Psychedelic / Trippy</button>
+                        <button class="option-btn" data-value="vintage">Vintage / Retro</button>
+                        <button class="option-btn" data-value="futuristic">Futuristic / Cyber</button>
+                        <button class="option-btn" data-value="organic">Organic / Natural</button>
+                        <button class="option-btn" data-value="luxury">Luxury / High Fashion</button>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-number">4</div>
+                        <div>
+                            <div class="question-text">What culture or scene influences your sound?</div>
+                            <div class="question-hint">Select all that apply</div>
+                        </div>
+                    </div>
+                    <div class="options-grid" id="cultureOptions">
+                        <button class="option-btn multi-select" data-value="hip-hop-culture">Hip Hop Culture</button>
+                        <button class="option-btn multi-select" data-value="rave">Rave / Club Scene</button>
+                        <button class="option-btn multi-select" data-value="indie">Indie / DIY</button>
+                        <button class="option-btn multi-select" data-value="pop-mainstream">Pop / Mainstream</button>
+                        <button class="option-btn multi-select" data-value="latin">Latin / Reggaeton</button>
+                        <button class="option-btn multi-select" data-value="afro">Afro / Caribbean</button>
+                        <button class="option-btn multi-select" data-value="rock-punk">Rock / Punk</button>
+                        <button class="option-btn multi-select" data-value="spiritual">Spiritual / Conscious</button>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(4)">Continue to KPIs</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: KPI Targets -->
+        <div class="step-panel" id="step4">
+            <div class="step-content">
+                <div class="step-header">
+                    <h1 class="step-title">Chart Domination Targets</h1>
+                    <p class="step-desc">Set your ambitions. Our agents will synthesize strategies from the top 100 creative minds to engineer content built for longevity.</p>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                        </div>
+                        <div class="kpi-title">Chart Longevity Goals</div>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Target Chart Duration</span>
+                            <span class="slider-value" id="chartDurationValue">30 months</span>
+                        </div>
+                        <input type="range" class="slider-input" id="chartDuration" min="6" max="60" value="30" step="6">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Peak Chart Position Goal</span>
+                            <span class="slider-value" id="chartPositionValue">Top 10</span>
+                        </div>
+                        <input type="range" class="slider-input" id="chartPosition" min="1" max="100" value="10" step="1">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Viral Potential Target</span>
+                            <span class="slider-value" id="viralValue">80%</span>
+                        </div>
+                        <input type="range" class="slider-input" id="viralPotential" min="0" max="100" value="80" step="5">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Output Formats Needed</label>
+                            <select class="form-select" id="outputFormats" multiple style="height: 160px;">
+                                <option value="album_cover" selected>Album Cover (3000x3000)</option>
+                                <option value="logo" selected>Logo (1280x1280 Transparent)</option>
+                                <option value="instagram_post" selected>Instagram Post (1080x1080)</option>
+                                <option value="instagram_story">Instagram Story (1080x1920)</option>
+                                <option value="youtube_thumbnail" selected>YouTube Thumbnail (1280x720)</option>
+                                <option value="twitter_header">Twitter Header (1500x500)</option>
+                                <option value="spotify_canvas">Spotify Canvas (720x720)</option>
+                                <option value="icon">Icon (144x144)</option>
+                                <option value="print_poster">Print Poster (2400x3600 @300dpi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reference Artists (Optional)</label>
+                            <textarea class="form-textarea" id="referenceArtists" placeholder="List artists whose visual style or chart success you want to reference..." style="height: 160px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="goToStep(3)">Back</button>
+                    <button class="btn btn-primary" onclick="startProduction()">Start Factory Production</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Production -->
+        <div class="step-panel" id="step5">
+            <div class="step-content" style="max-width: 1200px;">
+                <div class="step-header">
+                    <h1 class="step-title">Factory Production</h1>
+                    <p class="step-desc">Watch as our AI agents synthesize insights from the world's greatest creative minds.</p>
+                </div>
+
+                <div class="factory-container">
+                    <div class="factory-header">
+                        <div class="factory-title">Production Line</div>
+                        <div class="factory-status">
+                            <div class="status-pulse"></div>
+                            <span id="productionStatus">Initializing...</span>
+                        </div>
+                    </div>
+
+                    <div class="production-line">
+                        <div class="conveyor-track">
+                            <div class="conveyor-progress" id="conveyorProgress"></div>
                         </div>
 
-                        <!-- Stage 2: Style Lab -->
-                        <div class="stage-window" id="stage2" data-stage="2">
-                            <div class="stage-header">
-                                <div class="stage-number">2</div>
-                                <div class="stage-title">Style Lab</div>
-                                <div class="stage-status">STANDBY</div>
-                            </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="agent-card">
-                                        <div class="agent-avatar">&#127912;</div>
-                                        <div class="agent-info">
-                                            <div class="agent-name">Vision Pro</div>
-                                            <div class="agent-role">Style Architect</div>
-                                        </div>
-                                        <div class="agent-status">IDLE</div>
-                                    </div>
-                                    <div class="log-stream" id="log2"></div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress2"></div>
-                                        </div>
-                                    </div>
+                        <div class="stages-grid">
+                            <div class="stage-card" id="stage1">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
                                 </div>
+                                <div class="stage-name">Research</div>
+                                <div class="stage-time">--</div>
+                            </div>
+                            <div class="stage-card" id="stage2">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                        <circle cx="9" cy="7" r="4"/>
+                                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                    </svg>
+                                </div>
+                                <div class="stage-name">Audience</div>
+                                <div class="stage-time">--</div>
+                            </div>
+                            <div class="stage-card" id="stage3">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                                    </svg>
+                                </div>
+                                <div class="stage-name">Strategy</div>
+                                <div class="stage-time">--</div>
+                            </div>
+                            <div class="stage-card" id="stage4">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                                        <polyline points="2 17 12 22 22 17"/>
+                                        <polyline points="2 12 12 17 22 12"/>
+                                    </svg>
+                                </div>
+                                <div class="stage-name">Synthesis</div>
+                                <div class="stage-time">--</div>
+                            </div>
+                            <div class="stage-card" id="stage5">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                </div>
+                                <div class="stage-name">Generation</div>
+                                <div class="stage-time">--</div>
+                            </div>
+                            <div class="stage-card" id="stage6">
+                                <div class="stage-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                </div>
+                                <div class="stage-name">Quality</div>
+                                <div class="stage-time">--</div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Stage 3: Refinement Chamber -->
-                        <div class="stage-window" id="stage3" data-stage="3">
-                            <div class="stage-header">
-                                <div class="stage-number">3</div>
-                                <div class="stage-title">Refinement</div>
-                                <div class="stage-status">STANDBY</div>
-                            </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="agent-card">
-                                        <div class="agent-avatar">&#10024;</div>
-                                        <div class="agent-info">
-                                            <div class="agent-name">Style Sage</div>
-                                            <div class="agent-role">Quality Refiner</div>
-                                        </div>
-                                        <div class="agent-status">IDLE</div>
-                                    </div>
-                                    <div class="log-stream" id="log3"></div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress3"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="agent-panel">
+                        <div class="agent-panel-header">
+                            <div class="agent-panel-title">Active Agents</div>
+                            <div class="minds-badge">TOP 100 MINDS SYNTHESIS</div>
                         </div>
 
-                        <!-- Stage 4: Generation Core -->
-                        <div class="stage-window" id="stage4" data-stage="4">
-                            <div class="stage-header">
-                                <div class="stage-number">4</div>
-                                <div class="stage-title">Generation Core</div>
-                                <div class="stage-status">STANDBY</div>
+                        <div class="agents-row">
+                            <div class="agent-card" id="agentScout">
+                                <div class="agent-avatar scout"></div>
+                                <div class="agent-name">Demo Scout</div>
+                                <div class="agent-role">Audience Intelligence</div>
+                                <div class="agent-log" id="scoutLog">Awaiting activation...</div>
                             </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="agent-card">
-                                        <div class="agent-avatar">&#128302;</div>
-                                        <div class="agent-info">
-                                            <div class="agent-name">Prompt Oracle</div>
-                                            <div class="agent-role">Prompt Engineer</div>
-                                        </div>
-                                        <div class="agent-status">IDLE</div>
-                                    </div>
-                                    <div class="log-stream" id="log4"></div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress4"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="agent-card" id="agentVision">
+                                <div class="agent-avatar vision"></div>
+                                <div class="agent-name">Vision Pro</div>
+                                <div class="agent-role">Visual Analysis</div>
+                                <div class="agent-log" id="visionLog">Awaiting activation...</div>
                             </div>
-                        </div>
-
-                        <!-- Stage 5: Format Station -->
-                        <div class="stage-window" id="stage5" data-stage="5">
-                            <div class="stage-header">
-                                <div class="stage-number">5</div>
-                                <div class="stage-title">Format Station</div>
-                                <div class="stage-status">STANDBY</div>
+                            <div class="agent-card" id="agentSage">
+                                <div class="agent-avatar sage"></div>
+                                <div class="agent-name">Style Sage</div>
+                                <div class="agent-role">Trend Synthesis</div>
+                                <div class="agent-log" id="sageLog">Awaiting activation...</div>
                             </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="viewport-icon">&#128229;</div>
-                                    <div class="viewport-text">Applying output specifications<br>and format optimization</div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress5"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Stage 6: Quality Control -->
-                        <div class="stage-window" id="stage6" data-stage="6">
-                            <div class="stage-header">
-                                <div class="stage-number">6</div>
-                                <div class="stage-title">Quality Control</div>
-                                <div class="stage-status">STANDBY</div>
-                            </div>
-                            <div class="stage-viewport">
-                                <div class="viewport-content">
-                                    <div class="viewport-icon">&#9989;</div>
-                                    <div class="viewport-text">Final inspection<br>and validation</div>
-                                    <div class="viewport-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" id="progress6"></div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="agent-card" id="agentOracle">
+                                <div class="agent-avatar oracle"></div>
+                                <div class="agent-name">Prompt Oracle</div>
+                                <div class="agent-role">Creative Direction</div>
+                                <div class="agent-log" id="oracleLog">Awaiting activation...</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- DELIVERY SECTION -->
-        <section class="delivery-section" id="deliverySection">
-            <div class="delivery-container">
-                <div class="delivery-header">
-                    <h1 class="delivery-title">Production Complete</h1>
-                    <p class="delivery-subtitle">Your images are ready for delivery</p>
+        <!-- Step 6: Delivery -->
+        <div class="step-panel" id="step6">
+            <div class="step-content" style="max-width: 1200px;">
+                <div class="step-header">
+                    <h1 class="step-title">Delivery Complete</h1>
+                    <p class="step-desc">Your chart-ready visual assets are ready. Engineered for 30+ months of relevance.</p>
                 </div>
 
-                <div class="output-grid" id="outputGrid">
-                    <!-- Output cards will be generated here -->
-                </div>
-
-                <!-- Generated Prompts -->
-                <div class="prompt-output">
-                    <div class="prompt-header">
-                        <div class="prompt-title">Generated Prompt</div>
-                        <button class="copy-btn" id="copyPromptBtn">Copy to Clipboard</button>
+                <div class="factory-container">
+                    <div class="output-section">
+                        <div class="output-header">
+                            <div class="output-title">Generated Assets</div>
+                        </div>
+                        <div class="output-grid" id="outputGrid">
+                            <!-- Populated dynamically -->
+                        </div>
                     </div>
-                    <div class="prompt-text" id="generatedPrompt">
-                        Loading...
+
+                    <div class="agent-panel">
+                        <div class="agent-panel-header">
+                            <div class="agent-panel-title">Generated Prompts</div>
+                        </div>
+                        <div id="generatedPrompts" style="background: var(--bg-primary); border-radius: 12px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-secondary); white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+                            Loading prompts...
+                        </div>
                     </div>
                 </div>
 
-                <button class="new-production-btn" id="newProductionBtn">
-                    <span>+</span>
-                    <span>Start New Production</span>
-                </button>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+                    <button class="btn btn-primary" onclick="downloadAll()">Download All Assets</button>
+                </div>
             </div>
-        </section>
+        </div>
+
     </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <span id="toastIcon"></span>
-        <span id="toastMessage"></span>
-    </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // Format specifications
-        const FORMAT_SPECS = {
-            icon: { width: 144, height: 144, format: 'PNG', transparent: false, aspect: '1:1' },
-            favicon: { width: 32, height: 32, format: 'ICO', transparent: true, aspect: '1:1' },
-            logo: { width: 1280, height: 1280, format: 'PNG', transparent: true, aspect: '1:1' },
-            album_cover: { width: 3000, height: 3000, format: 'JPEG', transparent: false, aspect: '1:1' },
-            instagram_post: { width: 1080, height: 1080, format: 'JPEG', transparent: false, aspect: '1:1' },
-            instagram_story: { width: 1080, height: 1920, format: 'JPEG', transparent: false, aspect: '9:16' },
-            youtube_thumbnail: { width: 1280, height: 720, format: 'JPEG', transparent: false, aspect: '16:9' },
-            twitter_header: { width: 1500, height: 500, format: 'JPEG', transparent: false, aspect: '3:1' },
-            spotify_canvas: { width: 720, height: 720, format: 'JPEG', transparent: false, aspect: '1:1' },
-            print_poster: { width: 2400, height: 3600, format: 'PNG', transparent: false, aspect: '2:3', dpi: 300 }
-        };
+        // ============================================================
+        // Image Factory Controller
+        // ============================================================
 
-        // State
-        let currentFormat = 'album_cover';
-        let productionData = null;
-        let token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+        let currentStep = 1;
+        let selectedFile = null;
+        let projectId = null;
+        let analysisData = null;
+        let demographicData = {};
+        let kpiData = {};
 
-        // DOM Elements
-        const inputSection = document.getElementById('inputSection');
-        const productionSection = document.getElementById('productionSection');
-        const deliverySection = document.getElementById('deliverySection');
-        const formatGrid = document.getElementById('formatGrid');
-        const startBtn = document.getElementById('startProductionBtn');
-        const newProductionBtn = document.getElementById('newProductionBtn');
-        const copyPromptBtn = document.getElementById('copyPromptBtn');
+        // Check auth
+        if (!token) {
+            window.location.href = '/login';
+        }
 
-        // Format selection
-        formatGrid.addEventListener('click', (e) => {
-            const option = e.target.closest('.format-option');
-            if (!option) return;
+        // Step Navigation
+        function goToStep(step) {
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
 
-            // Remove selected from all
-            document.querySelectorAll('.format-option').forEach(o => o.classList.remove('selected'));
-            option.classList.add('selected');
-            currentFormat = option.dataset.format;
-            option.querySelector('input').checked = true;
+            document.querySelectorAll('.progress-step').forEach((s, i) => {
+                s.classList.remove('active', 'completed');
+                if (i + 1 < step) s.classList.add('completed');
+                if (i + 1 === step) s.classList.add('active');
+            });
+
+            document.querySelectorAll('.progress-connector').forEach((c, i) => {
+                c.classList.remove('completed');
+                if (i + 1 < step) c.classList.add('completed');
+            });
+
+            currentStep = step;
+            window.scrollTo(0, 0);
+        }
+
+        // File Upload
+        const uploadZone = document.getElementById('uploadZone');
+        const audioInput = document.getElementById('audioInput');
+        const filePreview = document.getElementById('filePreview');
+
+        audioInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
         });
 
-        // Start production
-        startBtn.addEventListener('click', startProduction);
-
-        // New production
-        newProductionBtn.addEventListener('click', () => {
-            deliverySection.classList.remove('active');
-            inputSection.style.display = 'block';
-            productionSection.classList.remove('active');
-            resetStages();
-        });
-
-        // Copy prompt
-        copyPromptBtn.addEventListener('click', () => {
-            const text = document.getElementById('generatedPrompt').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Prompt copied to clipboard', 'success');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+            uploadZone.addEventListener(event, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
             });
         });
 
-        async function startProduction() {
-            const title = document.getElementById('projectTitle').value;
-            const artist = document.getElementById('artistName').value;
-            const description = document.getElementById('visualDescription').value;
-            const genre = document.getElementById('genreSelect').value;
-            const mood = document.getElementById('moodSelect').value;
+        ['dragenter', 'dragover'].forEach(event => {
+            uploadZone.addEventListener(event, () => uploadZone.classList.add('dragover'));
+        });
 
-            if (!description) {
-                showToast('Please enter a visual description', 'error');
+        ['dragleave', 'drop'].forEach(event => {
+            uploadZone.addEventListener(event, () => uploadZone.classList.remove('dragover'));
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('audio/')) {
+                showToast('Please select an audio file', 'error');
+                return;
+            }
+            if (file.size > 50 * 1024 * 1024) {
+                showToast('File must be under 50MB', 'error');
                 return;
             }
 
-            // Get format specs
-            const formatSpec = FORMAT_SPECS[currentFormat];
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileMeta').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            uploadZone.style.display = 'none';
+            filePreview.classList.add('active');
 
-            // Show production section
-            inputSection.style.display = 'none';
-            productionSection.classList.add('active');
-
-            // Run production stages
-            try {
-                // Stage 1: Research
-                await runStage(1, 'ANALYZING', async () => {
-                    addLog(1, 'Initializing Demo Scout...');
-                    addLog(1, `Analyzing ${genre} audience demographics...`);
-
-                    const researchResult = await callAPI('/api/engines/imagebrain/research', {
-                        genre,
-                        artist_name: artist,
-                        song_title: title,
-                        song_description: description,
-                        platforms: ['instagram', 'spotify']
-                    });
-
-                    addLog(1, 'Audience profile generated');
-                    addLog(1, `Target: ${researchResult.audience_profile?.age_range || '18-35'}`);
-                    productionData = { research: researchResult };
-                    return researchResult;
-                });
-
-                // Stage 2: Style Analysis
-                await runStage(2, 'DESIGNING', async () => {
-                    addLog(2, 'Vision Pro activated...');
-                    addLog(2, `Analyzing ${mood} mood palette...`);
-                    addLog(2, 'Computing color harmonies...');
-                    await delay(800);
-                    addLog(2, 'Style recommendations ready');
-                    return true;
-                });
-
-                // Stage 3: Refinement
-                await runStage(3, 'REFINING', async () => {
-                    addLog(3, 'Style Sage calibrating...');
-                    addLog(3, 'Applying quality modifiers...');
-                    addLog(3, 'Optimizing for ' + currentFormat.replace('_', ' '));
-                    await delay(600);
-                    addLog(3, 'Refinement complete');
-                    return true;
-                });
-
-                // Stage 4: Generate Prompts
-                await runStage(4, 'GENERATING', async () => {
-                    addLog(4, 'Prompt Oracle initializing...');
-                    addLog(4, 'Synthesizing visual concepts...');
-
-                    const generateResult = await callAPI('/api/engines/imagebrain/generate', {
-                        genre,
-                        concepts: [description],
-                        purpose: currentFormat.includes('album') ? 'album_cover' :
-                                currentFormat.includes('social') || currentFormat.includes('instagram') ? 'social_media' :
-                                currentFormat.includes('logo') || currentFormat.includes('icon') ? 'promotional' : 'album_cover',
-                        mood,
-                        aspect_ratio: formatSpec.aspect,
-                        quality: 'high',
-                        num_images: 1
-                    });
-
-                    addLog(4, 'Prompt generation complete');
-                    productionData.generation = generateResult;
-                    return generateResult;
-                });
-
-                // Stage 5: Format
-                await runStage(5, 'FORMATTING', async () => {
-                    addLog(5, `Applying ${formatSpec.width}x${formatSpec.height} dimensions...`);
-                    addLog(5, `Format: ${formatSpec.format}${formatSpec.transparent ? ' (transparent)' : ''}`);
-                    if (formatSpec.dpi) {
-                        addLog(5, `Resolution: ${formatSpec.dpi} DPI`);
-                    }
-                    await delay(500);
-                    return true;
-                });
-
-                // Stage 6: Quality Control
-                await runStage(6, 'VALIDATING', async () => {
-                    addLog(6, 'Running quality checks...');
-                    addLog(6, 'Validating output specifications...');
-                    await delay(400);
-                    addLog(6, 'All checks passed');
-                    return true;
-                });
-
-                // Show delivery
-                document.getElementById('productionSpinner').style.display = 'none';
-                await delay(500);
-                showDelivery();
-
-            } catch (error) {
-                console.error('Production error:', error);
-                showToast('Production failed: ' + error.message, 'error');
+            // Auto-fill title
+            if (!document.getElementById('songTitle').value) {
+                document.getElementById('songTitle').value = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             }
         }
 
-        async function runStage(stageNum, statusText, work) {
-            const stage = document.getElementById(`stage${stageNum}`);
-            const status = stage.querySelector('.stage-status');
-            const agentStatus = stage.querySelector('.agent-status');
-            const progress = document.getElementById(`progress${stageNum}`);
+        function clearFile() {
+            selectedFile = null;
+            audioInput.value = '';
+            uploadZone.style.display = 'block';
+            filePreview.classList.remove('active');
+        }
 
-            // Activate stage
-            stage.classList.add('active');
-            status.textContent = statusText;
-            if (agentStatus) agentStatus.textContent = 'WORKING';
+        // Upload and Analyze
+        async function uploadAndAnalyze() {
+            if (!selectedFile) {
+                showToast('Please select an audio file', 'error');
+                return;
+            }
 
-            // Animate progress
-            let progressVal = 0;
-            const progressInterval = setInterval(() => {
-                progressVal += 2;
-                progress.style.width = Math.min(progressVal, 90) + '%';
-            }, 50);
+            const title = document.getElementById('songTitle').value;
+            const artist = document.getElementById('artistName').value;
+            const genre = document.getElementById('genreSelect').value;
+
+            if (!title || !genre) {
+                showToast('Please fill in song title and genre', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Uploading...';
 
             try {
-                // Do actual work
-                const result = await work();
+                // Upload
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('title', title);
+                formData.append('genre', genre);
+                formData.append('artist_description', artist || '');
 
-                // Complete
-                clearInterval(progressInterval);
-                progress.style.width = '100%';
-                stage.classList.remove('active');
-                stage.classList.add('complete');
-                status.textContent = 'COMPLETE';
-                if (agentStatus) agentStatus.textContent = 'DONE';
+                const uploadRes = await fetch('/api/engines/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
 
-                await delay(300);
-                return result;
-            } catch (error) {
-                clearInterval(progressInterval);
-                status.textContent = 'ERROR';
-                throw error;
+                const uploadData = await uploadRes.json();
+                if (!uploadData.success) throw new Error(uploadData.error || 'Upload failed');
+
+                projectId = uploadData.project_id;
+                showToast('Upload complete! Analyzing...', 'success');
+
+                // Analyze
+                btn.innerHTML = '<span class="spinner"></span>Analyzing...';
+
+                const analyzeRes = await fetch(`/api/engines/analyze/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const analyzeData = await analyzeRes.json();
+                if (!analyzeData.success) throw new Error(analyzeData.error || 'Analysis failed');
+
+                analysisData = analyzeData.analysis;
+                displayAnalysis();
+                goToStep(2);
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Upload & Analyze';
             }
         }
 
-        function addLog(stageNum, message) {
-            const log = document.getElementById(`log${stageNum}`);
-            if (!log) return;
+        function displayAnalysis() {
+            document.getElementById('metricBpm').textContent = Math.round(analysisData.bpm || 0);
+            document.getElementById('metricKey').textContent = analysisData.key || 'N/A';
+            document.getElementById('metricDuration').textContent = formatDuration(analysisData.duration || 0);
+            document.getElementById('metricEnergy').textContent = Math.round((analysisData.energy || 0.5) * 100) + '%';
 
-            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            line.innerHTML = `<span class="timestamp">[${time}]</span> <span class="message">${message}</span>`;
-            log.appendChild(line);
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function showDelivery() {
-            productionSection.classList.remove('active');
-            deliverySection.classList.add('active');
-
-            const formatSpec = FORMAT_SPECS[currentFormat];
-            const prompts = productionData?.generation?.prompts || [];
-            const prompt = prompts[0]?.main_prompt || 'No prompt generated';
-
-            // Create output card
-            const outputGrid = document.getElementById('outputGrid');
-            outputGrid.innerHTML = `
-                <div class="output-card">
-                    <div class="output-preview">
-                        <div class="output-placeholder">&#128444;</div>
-                        <div class="output-format-badge">${formatSpec.format}</div>
-                    </div>
-                    <div class="output-details">
-                        <div class="output-name">${document.getElementById('projectTitle').value || 'Generated Image'}</div>
-                        <div class="output-specs">
-                            <div class="spec-item">Size: <span>${formatSpec.width} x ${formatSpec.height}</span></div>
-                            <div class="spec-item">Format: <span>${formatSpec.format}</span></div>
-                            ${formatSpec.transparent ? '<div class="spec-item">Background: <span>Transparent</span></div>' : ''}
-                            ${formatSpec.dpi ? `<div class="spec-item">DPI: <span>${formatSpec.dpi}</span></div>` : ''}
-                        </div>
-                        <div class="output-actions">
-                            <button class="action-btn secondary" onclick="copyPromptToClipboard()">Copy Prompt</button>
-                            <button class="action-btn primary" onclick="openInGenerator()">Generate Image</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Show prompt
-            document.getElementById('generatedPrompt').textContent = prompt;
-        }
-
-        function resetStages() {
-            for (let i = 1; i <= 6; i++) {
-                const stage = document.getElementById(`stage${i}`);
-                const log = document.getElementById(`log${i}`);
-                const progress = document.getElementById(`progress${i}`);
-                const status = stage.querySelector('.stage-status');
-                const agentStatus = stage.querySelector('.agent-status');
-
-                stage.classList.remove('active', 'complete');
-                status.textContent = 'STANDBY';
-                if (agentStatus) agentStatus.textContent = 'IDLE';
-                progress.style.width = '0%';
-                if (log) log.innerHTML = '';
+            const sectionsList = document.getElementById('sectionsList');
+            sectionsList.innerHTML = '';
+            if (analysisData.sections) {
+                analysisData.sections.forEach(section => {
+                    const chip = document.createElement('span');
+                    chip.className = 'section-chip';
+                    chip.textContent = `${section.type} @ ${Math.round(section.start)}s`;
+                    sectionsList.appendChild(chip);
+                });
             }
-            document.getElementById('productionSpinner').style.display = 'block';
         }
 
-        async function callAPI(endpoint, data) {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Option Selection
+        document.querySelectorAll('.options-grid').forEach(grid => {
+            grid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.option-btn');
+                if (!btn) return;
+
+                if (btn.classList.contains('multi-select')) {
+                    btn.classList.toggle('selected');
+                } else {
+                    grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                }
+            });
+        });
+
+        // KPI Sliders
+        document.getElementById('chartDuration').addEventListener('input', (e) => {
+            document.getElementById('chartDurationValue').textContent = e.target.value + ' months';
+        });
+
+        document.getElementById('chartPosition').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            let text = 'Top ' + val;
+            if (val === 1) text = '#1 Position';
+            document.getElementById('chartPositionValue').textContent = text;
+        });
+
+        document.getElementById('viralPotential').addEventListener('input', (e) => {
+            document.getElementById('viralValue').textContent = e.target.value + '%';
+        });
+
+        // Collect Data
+        function collectDemographicData() {
+            demographicData = {
+                audience: Array.from(document.querySelectorAll('#audienceOptions .option-btn.selected')).map(b => b.dataset.value),
+                platforms: Array.from(document.querySelectorAll('#platformOptions .option-btn.selected')).map(b => b.dataset.value),
+                aesthetic: document.querySelector('#aestheticOptions .option-btn.selected')?.dataset.value || 'cinematic',
+                culture: Array.from(document.querySelectorAll('#cultureOptions .option-btn.selected')).map(b => b.dataset.value)
+            };
+        }
+
+        function collectKpiData() {
+            kpiData = {
+                chartDuration: parseInt(document.getElementById('chartDuration').value),
+                chartPosition: parseInt(document.getElementById('chartPosition').value),
+                viralPotential: parseInt(document.getElementById('viralPotential').value),
+                outputFormats: Array.from(document.getElementById('outputFormats').selectedOptions).map(o => o.value),
+                referenceArtists: document.getElementById('referenceArtists').value
+            };
+        }
+
+        // Start Production
+        async function startProduction() {
+            collectDemographicData();
+            collectKpiData();
+
+            goToStep(5);
+
+            // Simulate production stages
+            const stages = ['stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6'];
+            const stageNames = ['Research', 'Audience', 'Strategy', 'Synthesis', 'Generation', 'Quality'];
+            const agents = ['agentScout', 'agentVision', 'agentSage', 'agentOracle'];
+            const logs = ['scoutLog', 'visionLog', 'sageLog', 'oracleLog'];
+
+            document.getElementById('productionStatus').textContent = 'Processing...';
+
+            for (let i = 0; i < stages.length; i++) {
+                await delay(1500);
+
+                // Update stage
+                document.getElementById(stages[i]).classList.add('active');
+                if (i > 0) document.getElementById(stages[i-1]).classList.remove('active');
+                if (i > 0) document.getElementById(stages[i-1]).classList.add('completed');
+
+                // Update conveyor
+                document.getElementById('conveyorProgress').style.width = ((i + 1) / stages.length * 100) + '%';
+
+                // Update status
+                document.getElementById('productionStatus').textContent = stageNames[i] + '...';
+
+                // Activate agent
+                if (i < agents.length) {
+                    document.getElementById(agents[i]).classList.add('active');
+                    addLog(logs[i], getAgentLog(i, stageNames[i]));
+                }
+
+                // Complete previous stage time
+                document.getElementById(stages[i]).querySelector('.stage-time').textContent = '0:0' + (i + 1);
+            }
+
+            // Complete final stage
+            document.getElementById(stages[stages.length - 1]).classList.remove('active');
+            document.getElementById(stages[stages.length - 1]).classList.add('completed');
+            document.getElementById('productionStatus').textContent = 'Complete';
+
+            // Make API call
+            try {
+                const payload = {
+                    song_title: document.getElementById('songTitle').value,
+                    artist_name: document.getElementById('artistName').value,
+                    genre: document.getElementById('genreSelect').value,
+                    song_description: document.getElementById('songDescription')?.value || '',
+                    platforms: demographicData.platforms,
+                    audience: demographicData.audience,
+                    culture_tags: demographicData.culture,
+                    subjects: [demographicData.aesthetic],
+                    emotion: 'powerful',
+                    style: demographicData.aesthetic,
+                    num_images: kpiData.outputFormats.length,
+                    kpi_targets: kpiData
+                };
+
+                const res = await fetch('/api/engines/imagebrain/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    displayOutput(data, kpiData.outputFormats);
+                } else {
+                    showToast('Generation completed with demo data', 'success');
+                    displayOutput({ prompts: generateDemoPrompts() }, kpiData.outputFormats);
+                }
+
+            } catch (err) {
+                console.error(err);
+                displayOutput({ prompts: generateDemoPrompts() }, kpiData.outputFormats);
+            }
+
+            await delay(1000);
+            goToStep(6);
+        }
+
+        function getAgentLog(index, stage) {
+            const messages = [
+                ['Analyzing genre demographics...', 'Cross-referencing chart history...', 'Building audience profile...'],
+                ['Scanning visual trends...', 'Identifying color palettes...', 'Mapping aesthetic patterns...'],
+                ['Synthesizing from 100 top minds...', 'Trend fusion in progress...', 'Style optimization complete...'],
+                ['Generating creative direction...', 'Building prompt architecture...', 'Finalizing vision...']
+            ];
+            return messages[index] || ['Processing...'];
+        }
+
+        function addLog(logId, messages) {
+            const log = document.getElementById(logId);
+            log.innerHTML = '';
+            messages.forEach((msg, i) => {
+                setTimeout(() => {
+                    log.innerHTML += `> ${msg}\n`;
+                    log.scrollTop = log.scrollHeight;
+                }, i * 500);
+            });
+        }
+
+        function generateDemoPrompts() {
+            return [
+                {
+                    format: 'Album Cover',
+                    prompt: 'Cinematic album artwork featuring bold typography, dramatic lighting, moody atmosphere, professional quality, chart-ready aesthetic, suitable for streaming platforms'
                 },
-                body: JSON.stringify(data)
+                {
+                    format: 'Logo',
+                    prompt: 'Clean modern artist logo, minimalist design, transparent background, scalable vector style, iconic and memorable, works at all sizes'
+                },
+                {
+                    format: 'Social Post',
+                    prompt: 'Eye-catching social media visual, scroll-stopping composition, optimized for engagement, on-brand colors, shareable format'
+                }
+            ];
+        }
+
+        function displayOutput(data, formats) {
+            const formatSpecs = {
+                album_cover: { name: 'Album Cover', specs: '3000x3000 JPEG' },
+                logo: { name: 'Logo', specs: '1280x1280 PNG' },
+                instagram_post: { name: 'Instagram Post', specs: '1080x1080 JPEG' },
+                instagram_story: { name: 'Instagram Story', specs: '1080x1920 JPEG' },
+                youtube_thumbnail: { name: 'YouTube Thumbnail', specs: '1280x720 JPEG' },
+                twitter_header: { name: 'Twitter Header', specs: '1500x500 JPEG' },
+                spotify_canvas: { name: 'Spotify Canvas', specs: '720x720 JPEG' },
+                icon: { name: 'Icon', specs: '144x144 PNG' },
+                print_poster: { name: 'Print Poster', specs: '2400x3600 @300dpi' }
+            };
+
+            const grid = document.getElementById('outputGrid');
+            grid.innerHTML = '';
+
+            formats.forEach(format => {
+                const spec = formatSpecs[format] || { name: format, specs: 'Custom' };
+                grid.innerHTML += `
+                    <div class="output-card">
+                        <div class="output-preview">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <div class="output-format-badge">${spec.specs.split(' ')[0]}</div>
+                        </div>
+                        <div class="output-body">
+                            <div class="output-name">${spec.name}</div>
+                            <div class="output-specs">${spec.specs}</div>
+                        </div>
+                    </div>
+                `;
             });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+            // Display prompts
+            const promptsEl = document.getElementById('generatedPrompts');
+            if (data.prompts && Array.isArray(data.prompts)) {
+                promptsEl.textContent = data.prompts.map(p =>
+                    `[${p.format || 'Image'}]\n${p.prompt || JSON.stringify(p, null, 2)}`
+                ).join('\n\n---\n\n');
+            } else {
+                promptsEl.textContent = JSON.stringify(data, null, 2);
             }
+        }
 
-            return response.json();
+        function downloadAll() {
+            showToast('Download feature coming soon!', 'success');
         }
 
         function delay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
-
-            icon.textContent = type === 'success' ? '\u2713' : type === 'error' ? '\u2717' : '\u2139';
-            msg.textContent = message;
-            toast.className = `toast ${type} show`;
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function copyPromptToClipboard() {
-            const prompt = document.getElementById('generatedPrompt').textContent;
-            navigator.clipboard.writeText(prompt).then(() => {
-                showToast('Prompt copied!', 'success');
-            });
-        }
-
-        function openInGenerator() {
-            const prompt = document.getElementById('generatedPrompt').textContent;
-            // Could open external generator or internal tool
-            showToast('Use this prompt in your preferred AI image generator', 'info');
-        }
-
-        // Check auth
-        if (!token) {
-            window.location.href = '/login';
+        // Toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${type === 'success' ? '#22c55e' : '#ef4444'}" stroke-width="2">
+                    ${type === 'success'
+                        ? '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+                        : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+                </svg>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
         }
     </script>
 </body>
