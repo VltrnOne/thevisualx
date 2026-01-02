@@ -33,6 +33,7 @@ from creative_council import CreativeCouncil
 from colorbrain import ColorBrain, LookStyle
 from shotbrain import ShotBrain
 from editbrain import EditBrain
+from imagebrain import ImageBrain, ImagePurpose, AspectRatio
 
 # Try to import audio analyzer (optional - requires librosa)
 try:
@@ -68,6 +69,7 @@ colorbrains = {}
 shotbrains = {}
 editbrains = {}
 orchestrators = {}
+imagebrains = {}
 
 # Project and job storage
 projects = {}
@@ -187,6 +189,7 @@ def health():
             'ShotBrain',
             'EditBrain',
             'ColorBrain',
+            'ImageBrain',
             'CreativeCouncil',
             'PlatformPackager'
         ],
@@ -716,6 +719,192 @@ def analyze_for_cuts():
             'success': True,
             'cut_points': [cp.to_dict() for cp in cut_points],
             'stats': editbrain.get_cut_stats()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# ============================================================
+# IMAGEBRAIN ENDPOINTS
+# ============================================================
+
+@app.route('/api/imagebrain/research', methods=['POST'])
+def imagebrain_research():
+    """
+    ImageBrain Phase 1: Research audience and visual preferences.
+    Uses Demo Scout and Vision Pro agents.
+    """
+    data = request.json
+
+    # Accept both naming conventions (engines_client.js vs direct API)
+    genre = data.get('genre', 'electronic')
+    artist_name = data.get('artist_name')
+    song_title = data.get('song_title')
+    song_description = data.get('song_description')
+    artist_description = data.get('artist_description') or song_description
+
+    # Build description from available data
+    if artist_name and song_title:
+        artist_description = f"{artist_name} - {song_title}. {song_description or ''}"
+
+    target_platforms = data.get('target_platforms') or data.get('platforms', [])
+    existing_data = data.get('existing_data')
+    audience = data.get('audience', [])
+    culture_tags = data.get('culture_tags', [])
+
+    # Get or create ImageBrain instance
+    if genre not in imagebrains:
+        imagebrains[genre] = ImageBrain(genre=genre)
+
+    imagebrain = imagebrains[genre]
+
+    try:
+        result = imagebrain.research(
+            artist_description=artist_description,
+            target_platforms=target_platforms if target_platforms else None,
+            existing_data=existing_data
+        )
+
+        # Add extra context from request
+        if audience:
+            result['input_audience'] = audience
+        if culture_tags:
+            result['culture_tags'] = culture_tags
+        if song_title:
+            result['song_title'] = song_title
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/imagebrain/generate', methods=['POST'])
+def imagebrain_generate():
+    """
+    ImageBrain Phase 2: Generate image prompts.
+    Uses Vision Pro, Style Sage, and Prompt Oracle agents.
+    """
+    data = request.json
+
+    # Accept both naming conventions (engines_client.js vs direct API)
+    genre = data.get('genre', 'electronic')
+
+    # Build concepts from subjects or concepts param
+    concepts = data.get('concepts', [])
+    subjects = data.get('subjects', [])
+    if not concepts and subjects:
+        concepts = subjects
+
+    # If still no concepts, build from visual_references
+    visual_references = data.get('visual_references', '')
+    if not concepts and visual_references:
+        concepts = [visual_references]
+
+    # Build concepts from song/artist info if still empty
+    song_title = data.get('song_title', '')
+    artist_name = data.get('artist_name', '')
+    if not concepts and (song_title or artist_name):
+        concepts = [f"{artist_name} {song_title} music visual".strip()]
+
+    purpose = data.get('purpose', 'album_cover')
+    mood = data.get('mood') or data.get('emotion', 'serene')
+    aspect_ratio = data.get('aspect_ratio', '1:1')
+    quality = data.get('quality', 'high')
+    custom_style = data.get('custom_style') or data.get('style')
+    additional_keywords = data.get('additional_keywords', [])
+    num_images = data.get('num_images', 4)
+
+    # Extract research insights if provided
+    research_insights = data.get('research_insights', {})
+
+    if not concepts:
+        return jsonify({
+            'success': False,
+            'error': 'At least one concept or subject is required'
+        }), 400
+
+    # Limit to num_images concepts
+    if len(concepts) < num_images:
+        # Repeat concepts to fill
+        while len(concepts) < num_images:
+            concepts.append(concepts[len(concepts) % max(1, len(concepts) - 1)])
+    concepts = concepts[:num_images]
+
+    # Get or create ImageBrain instance
+    if genre not in imagebrains:
+        imagebrains[genre] = ImageBrain(genre=genre)
+
+    imagebrain = imagebrains[genre]
+
+    try:
+        result = imagebrain.generate(
+            concepts=concepts,
+            purpose=purpose,
+            mood=mood,
+            aspect_ratio=aspect_ratio,
+            quality=quality,
+            custom_style=custom_style,
+            additional_keywords=additional_keywords if additional_keywords else None
+        )
+
+        # Add input context to response
+        result['num_images'] = len(concepts)
+        result['input_concepts'] = concepts
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/imagebrain/full', methods=['POST'])
+def imagebrain_full_pipeline():
+    """
+    ImageBrain Full Pipeline: Research + Generate in one call.
+    """
+    data = request.json
+
+    genre = data.get('genre', 'electronic')
+    concepts = data.get('concepts', [])
+    artist_description = data.get('artist_description')
+    purpose = data.get('purpose', 'album_cover')
+    mood = data.get('mood', 'serene')
+    aspect_ratio = data.get('aspect_ratio', '1:1')
+    quality = data.get('quality', 'high')
+    target_platforms = data.get('target_platforms')
+
+    if not concepts:
+        return jsonify({
+            'success': False,
+            'error': 'At least one concept is required'
+        }), 400
+
+    # Create fresh ImageBrain instance for full pipeline
+    imagebrain = ImageBrain(genre=genre)
+    imagebrains[genre] = imagebrain
+
+    try:
+        output = imagebrain.full_pipeline(
+            concepts=concepts,
+            artist_description=artist_description,
+            purpose=purpose,
+            mood=mood,
+            aspect_ratio=aspect_ratio,
+            quality=quality,
+            target_platforms=target_platforms
+        )
+
+        return jsonify({
+            'success': True,
+            'output': output.to_dict()
         })
     except Exception as e:
         return jsonify({
