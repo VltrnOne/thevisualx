@@ -506,6 +506,11 @@ app.get('/engine/imagebrain', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'engine-imagebrain.html'));
 });
 
+// Image Factory - Standalone image creation experience
+app.get('/image-factory', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'image-factory.html'));
+});
+
 // Project detail page
 app.get('/project/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'project.html'));

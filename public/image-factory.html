@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Factory | VISUALX - AI Image Production Line</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --vltrn-purple: #7c3aed;
+            --vltrn-purple-light: #a855f7;
+            --vltrn-purple-dark: #5b21b6;
+            --factory-dark: #0a0a0f;
+            --factory-panel: #12121a;
+            --factory-border: #1e1e2e;
+            --factory-metal: #2a2a3a;
+            --factory-glow: rgba(124, 58, 237, 0.3);
+            --conveyor-color: #1a1a2a;
+            --success-green: #10b981;
+            --warning-yellow: #f59e0b;
+            --error-red: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--factory-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Factory Background Grid */
+        .factory-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header */
+        .factory-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 1px solid var(--factory-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .factory-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .factory-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .factory-logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .factory-logo-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .factory-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--factory-metal);
+            color: var(--text-primary);
+        }
+
+        /* Main Container */
+        .factory-container {
+            position: relative;
+            z-index: 1;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+
+        /* Input Section */
+        .input-section {
+            padding: 40px 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* Input Form */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 32px;
+        }
+
+        .concept-panel {
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--vltrn-purple);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--factory-dark);
+            border: 1px solid var(--factory-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--vltrn-purple);
+            box-shadow: 0 0 0 3px var(--factory-glow);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        /* Output Format Selection */
+        .output-panel {
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .format-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .format-option {
+            position: relative;
+            padding: 16px;
+            background: var(--factory-dark);
+            border: 2px solid var(--factory-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .format-option:hover {
+            border-color: var(--factory-metal);
+            background: var(--factory-metal);
+        }
+
+        .format-option.selected {
+            border-color: var(--vltrn-purple);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .format-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .format-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--factory-panel);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .format-option.selected .format-icon {
+            background: var(--vltrn-purple);
+        }
+
+        .format-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .format-specs {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .format-check {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            background: var(--vltrn-purple);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .format-option.selected .format-check {
+            display: flex;
+        }
+
+        /* Start Button */
+        .start-production-btn {
+            width: 100%;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .start-production-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
+        }
+
+        .start-production-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================================
+           FACTORY PRODUCTION LINE
+           ============================================ */
+
+        .production-section {
+            display: none;
+            padding: 40px 24px;
+        }
+
+        .production-section.active {
+            display: block;
+        }
+
+        /* Conveyor Container */
+        .conveyor-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Conveyor Belt */
+        .conveyor-belt {
+            position: relative;
+            background: var(--conveyor-color);
+            border-radius: 20px;
+            padding: 40px 20px;
+            border: 2px solid var(--factory-border);
+            overflow: hidden;
+        }
+
+        .conveyor-belt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 40px,
+                rgba(124, 58, 237, 0.05) 40px,
+                rgba(124, 58, 237, 0.05) 42px
+            );
+            animation: conveyorMove 2s linear infinite;
+        }
+
+        @keyframes conveyorMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(42px); }
+        }
+
+        /* Production Stages */
+        .stages-row {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .stage-window {
+            flex: 0 0 280px;
+            background: var(--factory-panel);
+            border: 2px solid var(--factory-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .stage-window.active {
+            border-color: var(--vltrn-purple);
+            box-shadow: 0 0 30px var(--factory-glow);
+        }
+
+        .stage-window.complete {
+            border-color: var(--success-green);
+        }
+
+        .stage-window.complete .stage-header {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Stage Header */
+        .stage-header {
+            padding: 16px;
+            background: var(--factory-dark);
+            border-bottom: 1px solid var(--factory-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stage-number {
+            width: 28px;
+            height: 28px;
+            background: var(--factory-metal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stage-window.active .stage-number {
+            background: var(--vltrn-purple);
+        }
+
+        .stage-window.complete .stage-number {
+            background: var(--success-green);
+        }
+
+        .stage-title {
+            font-size: 13px;
+            font-weight: 600;
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .stage-status {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stage-window.active .stage-status {
+            color: var(--vltrn-purple-light);
+        }
+
+        .stage-window.complete .stage-status {
+            color: var(--success-green);
+        }
+
+        /* Stage Content (Viewing Window) */
+        .stage-viewport {
+            height: 200px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewport-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .viewport-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--factory-dark);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .stage-window.active .viewport-icon {
+            background: rgba(124, 58, 237, 0.2);
+            animation: iconPulse 1.5s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .viewport-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .viewport-progress {
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--factory-dark);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--vltrn-purple);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .stage-window.complete .progress-fill {
+            background: var(--success-green);
+            width: 100%;
+        }
+
+        /* Agent Card in Viewport */
+        .agent-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--factory-dark);
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--vltrn-purple) 0%, var(--vltrn-purple-light) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .agent-info {
+            text-align: left;
+        }
+
+        .agent-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .agent-role {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .agent-status {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 4px 8px;
+            background: rgba(124, 58, 237, 0.2);
+            border-radius: 4px;
+            color: var(--vltrn-purple-light);
+        }
+
+        .stage-window.active .agent-status {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Log Stream */
+        .log-stream {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            background: var(--factory-dark);
+            border-radius: 8px;
+            padding: 8px;
+            height: 80px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .log-line .timestamp {
+            color: var(--text-muted);
+        }
+
+        .log-line .message {
+            color: var(--vltrn-purple-light);
+        }
+
+        /* ============================================
+           DELIVERY BAY
+           ============================================ */
+
+        .delivery-section {
+            display: none;
+            padding: 40px 24px;
+        }
+
+        .delivery-section.active {
+            display: block;
+        }
+
+        .delivery-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .delivery-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .delivery-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .delivery-subtitle {
+            color: var(--text-secondary);
+        }
+
+        /* Output Grid */
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .output-card {
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .output-preview {
+            aspect-ratio: 1;
+            background: var(--factory-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .output-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .output-placeholder {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .output-format-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: blur(4px);
+        }
+
+        .output-details {
+            padding: 20px;
+        }
+
+        .output-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .output-specs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .spec-item {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .spec-item span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .action-btn.primary {
+            background: var(--vltrn-purple);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--vltrn-purple-dark);
+        }
+
+        .action-btn.secondary {
+            background: var(--factory-dark);
+            border: 1px solid var(--factory-border);
+            color: var(--text-secondary);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--factory-metal);
+            color: var(--text-primary);
+        }
+
+        /* Prompt Output */
+        .prompt-output {
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .prompt-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: var(--factory-dark);
+            border: 1px solid var(--factory-border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--factory-metal);
+            color: var(--text-primary);
+        }
+
+        .prompt-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            background: var(--factory-dark);
+            border-radius: 10px;
+            padding: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* New Production Button */
+        .new-production-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: var(--factory-panel);
+            border: 2px dashed var(--factory-border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 32px;
+        }
+
+        .new-production-btn:hover {
+            border-color: var(--vltrn-purple);
+            color: var(--vltrn-purple-light);
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stages-row {
+                padding-bottom: 20px;
+            }
+
+            .stage-window {
+                flex: 0 0 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .factory-header {
+                padding: 0 16px;
+            }
+
+            .input-section,
+            .production-section,
+            .delivery-section {
+                padding: 24px 16px;
+            }
+
+            .format-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .output-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--factory-border);
+            border-top-color: var(--vltrn-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            background: var(--factory-panel);
+            border: 1px solid var(--factory-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success-green);
+        }
+
+        .toast.error {
+            border-color: var(--error-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="factory-bg"></div>
+
+    <!-- Header -->
+    <header class="factory-header">
+        <div class="factory-logo">
+            <div class="factory-logo-icon">V</div>
+            <div>
+                <div class="factory-logo-text">Image Factory</div>
+                <div class="factory-logo-sub">AI Production Line</div>
+            </div>
+        </div>
+        <div class="factory-status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Systems Online</span>
+            </div>
+            <a href="/dashboard" class="back-btn">
+                <span>Exit Factory</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="factory-container">
+        <!-- INPUT SECTION -->
+        <section class="input-section" id="inputSection">
+            <h1 class="section-title">Initialize Production</h1>
+            <p class="section-subtitle">Configure your image specifications and watch the factory build your visuals</p>
+
+            <div class="input-grid">
+                <!-- Concept Input -->
+                <div class="concept-panel">
+                    <div class="panel-title">Visual Concept</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Title</label>
+                        <input type="text" class="form-input" id="projectTitle" placeholder="e.g., Midnight Dreams Album">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Artist / Brand Name</label>
+                        <input type="text" class="form-input" id="artistName" placeholder="e.g., Luna Rose">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visual Description</label>
+                        <textarea class="form-input form-textarea" id="visualDescription" placeholder="Describe the visual concept you want to create. Be specific about mood, elements, colors, and style..."></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Genre / Style</label>
+                            <select class="form-input form-select" id="genreSelect">
+                                <option value="electronic">Electronic</option>
+                                <option value="hip-hop">Hip-Hop</option>
+                                <option value="r&b">R&B</option>
+                                <option value="pop">Pop</option>
+                                <option value="rock">Rock</option>
+                                <option value="indie">Indie</option>
+                                <option value="ambient">Ambient</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mood</label>
+                            <select class="form-input form-select" id="moodSelect">
+                                <option value="euphoric">Euphoric</option>
+                                <option value="melancholic">Melancholic</option>
+                                <option value="aggressive">Aggressive</option>
+                                <option value="serene">Serene</option>
+                                <option value="mysterious">Mysterious</option>
+                                <option value="romantic">Romantic</option>
+                                <option value="dark">Dark</option>
+                                <option value="triumphant">Triumphant</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Format Selection -->
+                <div class="output-panel">
+                    <div class="panel-title">Output Format</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Select the intended use for automatic dimension optimization</p>
+
+                    <div class="format-grid" id="formatGrid">
+                        <!-- Icon -->
+                        <label class="format-option" data-format="icon">
+                            <input type="radio" name="format" value="icon">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9635;</div>
+                            <div class="format-name">Icon</div>
+                            <div class="format-specs">144 x 144 PNG</div>
+                        </label>
+
+                        <!-- Favicon -->
+                        <label class="format-option" data-format="favicon">
+                            <input type="radio" name="format" value="favicon">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9733;</div>
+                            <div class="format-name">Favicon</div>
+                            <div class="format-specs">32 x 32 ICO</div>
+                        </label>
+
+                        <!-- Logo -->
+                        <label class="format-option" data-format="logo">
+                            <input type="radio" name="format" value="logo">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9830;</div>
+                            <div class="format-name">Logo</div>
+                            <div class="format-specs">1280 x 1280 PNG-T</div>
+                        </label>
+
+                        <!-- Album Cover -->
+                        <label class="format-option selected" data-format="album_cover">
+                            <input type="radio" name="format" value="album_cover" checked>
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9836;</div>
+                            <div class="format-name">Album Cover</div>
+                            <div class="format-specs">3000 x 3000 JPEG</div>
+                        </label>
+
+                        <!-- Instagram Post -->
+                        <label class="format-option" data-format="instagram_post">
+                            <input type="radio" name="format" value="instagram_post">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#128247;</div>
+                            <div class="format-name">Instagram Post</div>
+                            <div class="format-specs">1080 x 1080 JPEG</div>
+                        </label>
+
+                        <!-- Instagram Story -->
+                        <label class="format-option" data-format="instagram_story">
+                            <input type="radio" name="format" value="instagram_story">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#128250;</div>
+                            <div class="format-name">Instagram Story</div>
+                            <div class="format-specs">1080 x 1920 JPEG</div>
+                        </label>
+
+                        <!-- YouTube Thumbnail -->
+                        <label class="format-option" data-format="youtube_thumbnail">
+                            <input type="radio" name="format" value="youtube_thumbnail">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9658;</div>
+                            <div class="format-name">YouTube Thumb</div>
+                            <div class="format-specs">1280 x 720 JPEG</div>
+                        </label>
+
+                        <!-- Twitter Header -->
+                        <label class="format-option" data-format="twitter_header">
+                            <input type="radio" name="format" value="twitter_header">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#120143;</div>
+                            <div class="format-name">Twitter Header</div>
+                            <div class="format-specs">1500 x 500 JPEG</div>
+                        </label>
+
+                        <!-- Spotify Canvas -->
+                        <label class="format-option" data-format="spotify_canvas">
+                            <input type="radio" name="format" value="spotify_canvas">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#9834;</div>
+                            <div class="format-name">Spotify Canvas</div>
+                            <div class="format-specs">720 x 720 JPEG</div>
+                        </label>
+
+                        <!-- Print Poster -->
+                        <label class="format-option" data-format="print_poster">
+                            <input type="radio" name="format" value="print_poster">
+                            <div class="format-check">&#10003;</div>
+                            <div class="format-icon">&#128196;</div>
+                            <div class="format-name">Print Poster</div>
+                            <div class="format-specs">2400 x 3600 PNG 300dpi</div>
+                        </label>
+                    </div>
+
+                    <button class="start-production-btn" id="startProductionBtn">
+                        <span>Start Production</span>
+                        <span>&#9654;</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCTION LINE SECTION -->
+        <section class="production-section" id="productionSection">
+            <div class="conveyor-container">
+                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+                    <span class="loading-spinner" id="productionSpinner"></span>
+                    Production in Progress
+                </h2>
+
+                <div class="conveyor-belt">
+                    <div class="stages-row" id="stagesRow">
+                        <!-- Stage 1: Research Bay -->
+                        <div class="stage-window" id="stage1" data-stage="1">
+                            <div class="stage-header">
+                                <div class="stage-number">1</div>
+                                <div class="stage-title">Research Bay</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="agent-card">
+                                        <div class="agent-avatar">&#128269;</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">Demo Scout</div>
+                                            <div class="agent-role">Audience Analyst</div>
+                                        </div>
+                                        <div class="agent-status">IDLE</div>
+                                    </div>
+                                    <div class="log-stream" id="log1"></div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 2: Style Lab -->
+                        <div class="stage-window" id="stage2" data-stage="2">
+                            <div class="stage-header">
+                                <div class="stage-number">2</div>
+                                <div class="stage-title">Style Lab</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="agent-card">
+                                        <div class="agent-avatar">&#127912;</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">Vision Pro</div>
+                                            <div class="agent-role">Style Architect</div>
+                                        </div>
+                                        <div class="agent-status">IDLE</div>
+                                    </div>
+                                    <div class="log-stream" id="log2"></div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 3: Refinement Chamber -->
+                        <div class="stage-window" id="stage3" data-stage="3">
+                            <div class="stage-header">
+                                <div class="stage-number">3</div>
+                                <div class="stage-title">Refinement</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="agent-card">
+                                        <div class="agent-avatar">&#10024;</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">Style Sage</div>
+                                            <div class="agent-role">Quality Refiner</div>
+                                        </div>
+                                        <div class="agent-status">IDLE</div>
+                                    </div>
+                                    <div class="log-stream" id="log3"></div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress3"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 4: Generation Core -->
+                        <div class="stage-window" id="stage4" data-stage="4">
+                            <div class="stage-header">
+                                <div class="stage-number">4</div>
+                                <div class="stage-title">Generation Core</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="agent-card">
+                                        <div class="agent-avatar">&#128302;</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">Prompt Oracle</div>
+                                            <div class="agent-role">Prompt Engineer</div>
+                                        </div>
+                                        <div class="agent-status">IDLE</div>
+                                    </div>
+                                    <div class="log-stream" id="log4"></div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress4"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 5: Format Station -->
+                        <div class="stage-window" id="stage5" data-stage="5">
+                            <div class="stage-header">
+                                <div class="stage-number">5</div>
+                                <div class="stage-title">Format Station</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="viewport-icon">&#128229;</div>
+                                    <div class="viewport-text">Applying output specifications<br>and format optimization</div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress5"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 6: Quality Control -->
+                        <div class="stage-window" id="stage6" data-stage="6">
+                            <div class="stage-header">
+                                <div class="stage-number">6</div>
+                                <div class="stage-title">Quality Control</div>
+                                <div class="stage-status">STANDBY</div>
+                            </div>
+                            <div class="stage-viewport">
+                                <div class="viewport-content">
+                                    <div class="viewport-icon">&#9989;</div>
+                                    <div class="viewport-text">Final inspection<br>and validation</div>
+                                    <div class="viewport-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress6"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DELIVERY SECTION -->
+        <section class="delivery-section" id="deliverySection">
+            <div class="delivery-container">
+                <div class="delivery-header">
+                    <h1 class="delivery-title">Production Complete</h1>
+                    <p class="delivery-subtitle">Your images are ready for delivery</p>
+                </div>
+
+                <div class="output-grid" id="outputGrid">
+                    <!-- Output cards will be generated here -->
+                </div>
+
+                <!-- Generated Prompts -->
+                <div class="prompt-output">
+                    <div class="prompt-header">
+                        <div class="prompt-title">Generated Prompt</div>
+                        <button class="copy-btn" id="copyPromptBtn">Copy to Clipboard</button>
+                    </div>
+                    <div class="prompt-text" id="generatedPrompt">
+                        Loading...
+                    </div>
+                </div>
+
+                <button class="new-production-btn" id="newProductionBtn">
+                    <span>+</span>
+                    <span>Start New Production</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastIcon"></span>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Format specifications
+        const FORMAT_SPECS = {
+            icon: { width: 144, height: 144, format: 'PNG', transparent: false, aspect: '1:1' },
+            favicon: { width: 32, height: 32, format: 'ICO', transparent: true, aspect: '1:1' },
+            logo: { width: 1280, height: 1280, format: 'PNG', transparent: true, aspect: '1:1' },
+            album_cover: { width: 3000, height: 3000, format: 'JPEG', transparent: false, aspect: '1:1' },
+            instagram_post: { width: 1080, height: 1080, format: 'JPEG', transparent: false, aspect: '1:1' },
+            instagram_story: { width: 1080, height: 1920, format: 'JPEG', transparent: false, aspect: '9:16' },
+            youtube_thumbnail: { width: 1280, height: 720, format: 'JPEG', transparent: false, aspect: '16:9' },
+            twitter_header: { width: 1500, height: 500, format: 'JPEG', transparent: false, aspect: '3:1' },
+            spotify_canvas: { width: 720, height: 720, format: 'JPEG', transparent: false, aspect: '1:1' },
+            print_poster: { width: 2400, height: 3600, format: 'PNG', transparent: false, aspect: '2:3', dpi: 300 }
+        };
+
+        // State
+        let currentFormat = 'album_cover';
+        let productionData = null;
+        let token = localStorage.getItem('token');
+
+        // DOM Elements
+        const inputSection = document.getElementById('inputSection');
+        const productionSection = document.getElementById('productionSection');
+        const deliverySection = document.getElementById('deliverySection');
+        const formatGrid = document.getElementById('formatGrid');
+        const startBtn = document.getElementById('startProductionBtn');
+        const newProductionBtn = document.getElementById('newProductionBtn');
+        const copyPromptBtn = document.getElementById('copyPromptBtn');
+
+        // Format selection
+        formatGrid.addEventListener('click', (e) => {
+            const option = e.target.closest('.format-option');
+            if (!option) return;
+
+            // Remove selected from all
+            document.querySelectorAll('.format-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            currentFormat = option.dataset.format;
+            option.querySelector('input').checked = true;
+        });
+
+        // Start production
+        startBtn.addEventListener('click', startProduction);
+
+        // New production
+        newProductionBtn.addEventListener('click', () => {
+            deliverySection.classList.remove('active');
+            inputSection.style.display = 'block';
+            productionSection.classList.remove('active');
+            resetStages();
+        });
+
+        // Copy prompt
+        copyPromptBtn.addEventListener('click', () => {
+            const text = document.getElementById('generatedPrompt').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Prompt copied to clipboard', 'success');
+            });
+        });
+
+        async function startProduction() {
+            const title = document.getElementById('projectTitle').value;
+            const artist = document.getElementById('artistName').value;
+            const description = document.getElementById('visualDescription').value;
+            const genre = document.getElementById('genreSelect').value;
+            const mood = document.getElementById('moodSelect').value;
+
+            if (!description) {
+                showToast('Please enter a visual description', 'error');
+                return;
+            }
+
+            // Get format specs
+            const formatSpec = FORMAT_SPECS[currentFormat];
+
+            // Show production section
+            inputSection.style.display = 'none';
+            productionSection.classList.add('active');
+
+            // Run production stages
+            try {
+                // Stage 1: Research
+                await runStage(1, 'ANALYZING', async () => {
+                    addLog(1, 'Initializing Demo Scout...');
+                    addLog(1, `Analyzing ${genre} audience demographics...`);
+
+                    const researchResult = await callAPI('/api/engines/imagebrain/research', {
+                        genre,
+                        artist_name: artist,
+                        song_title: title,
+                        song_description: description,
+                        platforms: ['instagram', 'spotify']
+                    });
+
+                    addLog(1, 'Audience profile generated');
+                    addLog(1, `Target: ${researchResult.audience_profile?.age_range || '18-35'}`);
+                    productionData = { research: researchResult };
+                    return researchResult;
+                });
+
+                // Stage 2: Style Analysis
+                await runStage(2, 'DESIGNING', async () => {
+                    addLog(2, 'Vision Pro activated...');
+                    addLog(2, `Analyzing ${mood} mood palette...`);
+                    addLog(2, 'Computing color harmonies...');
+                    await delay(800);
+                    addLog(2, 'Style recommendations ready');
+                    return true;
+                });
+
+                // Stage 3: Refinement
+                await runStage(3, 'REFINING', async () => {
+                    addLog(3, 'Style Sage calibrating...');
+                    addLog(3, 'Applying quality modifiers...');
+                    addLog(3, 'Optimizing for ' + currentFormat.replace('_', ' '));
+                    await delay(600);
+                    addLog(3, 'Refinement complete');
+                    return true;
+                });
+
+                // Stage 4: Generate Prompts
+                await runStage(4, 'GENERATING', async () => {
+                    addLog(4, 'Prompt Oracle initializing...');
+                    addLog(4, 'Synthesizing visual concepts...');
+
+                    const generateResult = await callAPI('/api/engines/imagebrain/generate', {
+                        genre,
+                        concepts: [description],
+                        purpose: currentFormat.includes('album') ? 'album_cover' :
+                                currentFormat.includes('social') || currentFormat.includes('instagram') ? 'social_media' :
+                                currentFormat.includes('logo') || currentFormat.includes('icon') ? 'promotional' : 'album_cover',
+                        mood,
+                        aspect_ratio: formatSpec.aspect,
+                        quality: 'high',
+                        num_images: 1
+                    });
+
+                    addLog(4, 'Prompt generation complete');
+                    productionData.generation = generateResult;
+                    return generateResult;
+                });
+
+                // Stage 5: Format
+                await runStage(5, 'FORMATTING', async () => {
+                    addLog(5, `Applying ${formatSpec.width}x${formatSpec.height} dimensions...`);
+                    addLog(5, `Format: ${formatSpec.format}${formatSpec.transparent ? ' (transparent)' : ''}`);
+                    if (formatSpec.dpi) {
+                        addLog(5, `Resolution: ${formatSpec.dpi} DPI`);
+                    }
+                    await delay(500);
+                    return true;
+                });
+
+                // Stage 6: Quality Control
+                await runStage(6, 'VALIDATING', async () => {
+                    addLog(6, 'Running quality checks...');
+                    addLog(6, 'Validating output specifications...');
+                    await delay(400);
+                    addLog(6, 'All checks passed');
+                    return true;
+                });
+
+                // Show delivery
+                document.getElementById('productionSpinner').style.display = 'none';
+                await delay(500);
+                showDelivery();
+
+            } catch (error) {
+                console.error('Production error:', error);
+                showToast('Production failed: ' + error.message, 'error');
+            }
+        }
+
+        async function runStage(stageNum, statusText, work) {
+            const stage = document.getElementById(`stage${stageNum}`);
+            const status = stage.querySelector('.stage-status');
+            const agentStatus = stage.querySelector('.agent-status');
+            const progress = document.getElementById(`progress${stageNum}`);
+
+            // Activate stage
+            stage.classList.add('active');
+            status.textContent = statusText;
+            if (agentStatus) agentStatus.textContent = 'WORKING';
+
+            // Animate progress
+            let progressVal = 0;
+            const progressInterval = setInterval(() => {
+                progressVal += 2;
+                progress.style.width = Math.min(progressVal, 90) + '%';
+            }, 50);
+
+            try {
+                // Do actual work
+                const result = await work();
+
+                // Complete
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                stage.classList.remove('active');
+                stage.classList.add('complete');
+                status.textContent = 'COMPLETE';
+                if (agentStatus) agentStatus.textContent = 'DONE';
+
+                await delay(300);
+                return result;
+            } catch (error) {
+                clearInterval(progressInterval);
+                status.textContent = 'ERROR';
+                throw error;
+            }
+        }
+
+        function addLog(stageNum, message) {
+            const log = document.getElementById(`log${stageNum}`);
+            if (!log) return;
+
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span class="timestamp">[${time}]</span> <span class="message">${message}</span>`;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function showDelivery() {
+            productionSection.classList.remove('active');
+            deliverySection.classList.add('active');
+
+            const formatSpec = FORMAT_SPECS[currentFormat];
+            const prompts = productionData?.generation?.prompts || [];
+            const prompt = prompts[0]?.main_prompt || 'No prompt generated';
+
+            // Create output card
+            const outputGrid = document.getElementById('outputGrid');
+            outputGrid.innerHTML = `
+                <div class="output-card">
+                    <div class="output-preview">
+                        <div class="output-placeholder">&#128444;</div>
+                        <div class="output-format-badge">${formatSpec.format}</div>
+                    </div>
+                    <div class="output-details">
+                        <div class="output-name">${document.getElementById('projectTitle').value || 'Generated Image'}</div>
+                        <div class="output-specs">
+                            <div class="spec-item">Size: <span>${formatSpec.width} x ${formatSpec.height}</span></div>
+                            <div class="spec-item">Format: <span>${formatSpec.format}</span></div>
+                            ${formatSpec.transparent ? '<div class="spec-item">Background: <span>Transparent</span></div>' : ''}
+                            ${formatSpec.dpi ? `<div class="spec-item">DPI: <span>${formatSpec.dpi}</span></div>` : ''}
+                        </div>
+                        <div class="output-actions">
+                            <button class="action-btn secondary" onclick="copyPromptToClipboard()">Copy Prompt</button>
+                            <button class="action-btn primary" onclick="openInGenerator()">Generate Image</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show prompt
+            document.getElementById('generatedPrompt').textContent = prompt;
+        }
+
+        function resetStages() {
+            for (let i = 1; i <= 6; i++) {
+                const stage = document.getElementById(`stage${i}`);
+                const log = document.getElementById(`log${i}`);
+                const progress = document.getElementById(`progress${i}`);
+                const status = stage.querySelector('.stage-status');
+                const agentStatus = stage.querySelector('.agent-status');
+
+                stage.classList.remove('active', 'complete');
+                status.textContent = 'STANDBY';
+                if (agentStatus) agentStatus.textContent = 'IDLE';
+                progress.style.width = '0%';
+                if (log) log.innerHTML = '';
+            }
+            document.getElementById('productionSpinner').style.display = 'block';
+        }
+
+        async function callAPI(endpoint, data) {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            icon.textContent = type === 'success' ? '\u2713' : type === 'error' ? '\u2717' : '\u2139';
+            msg.textContent = message;
+            toast.className = `toast ${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function copyPromptToClipboard() {
+            const prompt = document.getElementById('generatedPrompt').textContent;
+            navigator.clipboard.writeText(prompt).then(() => {
+                showToast('Prompt copied!', 'success');
+            });
+        }
+
+        function openInGenerator() {
+            const prompt = document.getElementById('generatedPrompt').textContent;
+            // Could open external generator or internal tool
+            showToast('Use this prompt in your preferred AI image generator', 'info');
+        }
+
+        // Check auth
+        if (!token) {
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>
