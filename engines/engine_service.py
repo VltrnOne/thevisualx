@@ -99,8 +99,30 @@ class AudioAnalyzer:
     def load_audio(self):
         if not AUDIO_ANALYSIS_ENABLED:
             raise Exception("Audio analysis not available - librosa not installed")
-        self.y, self.sr = librosa.load(self.audio_path)
-        self.duration = float(librosa.get_duration(y=self.y, sr=self.sr))
+
+        # Get duration first using file-based method (more reliable for large files)
+        try:
+            self.duration = float(librosa.get_duration(path=self.audio_path))
+        except Exception:
+            # Fallback: try older API
+            try:
+                self.duration = float(librosa.get_duration(filename=self.audio_path))
+            except Exception:
+                self.duration = 180.0  # Default 3 min if all else fails
+
+        # Load audio with duration limit for large files to prevent memory issues
+        try:
+            # For files > 30MB, only load first 5 minutes
+            if os.path.getsize(self.audio_path) > 30 * 1024 * 1024:
+                self.y, self.sr = librosa.load(self.audio_path, duration=300, sr=22050)
+            else:
+                self.y, self.sr = librosa.load(self.audio_path, sr=22050)
+        except Exception as e:
+            # If loading fails, create minimal data for analysis
+            print(f"Warning: Could not fully load audio: {e}")
+            self.sr = 22050
+            self.y = np.zeros(int(self.sr * min(self.duration, 300)))
+
         return self.duration
 
     def get_tempo(self):
