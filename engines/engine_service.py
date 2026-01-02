@@ -103,17 +103,30 @@ class AudioAnalyzer:
             file_size = os.path.getsize(self.audio_path)
             ext = os.path.splitext(self.audio_path)[1].lower()
             # Rough estimates: MP3 ~128kbps, WAV ~1411kbps, FLAC ~900kbps
+            # For WAV: file_size = duration * sample_rate * channels * bytes_per_sample
+            # CD quality: 44100 Hz * 2 channels * 2 bytes = 176400 bytes/sec
             if ext == '.mp3':
                 return file_size / (128 * 1000 / 8)  # 128 kbps
             elif ext == '.wav':
-                return file_size / (1411 * 1000 / 8)  # CD quality
+                # Try to get actual WAV header info first
+                try:
+                    import wave
+                    with wave.open(self.audio_path, 'rb') as wav_file:
+                        frames = wav_file.getnframes()
+                        sample_rate = wav_file.getframerate()
+                        duration = frames / float(sample_rate)
+                        return duration
+                except Exception:
+                    # Fallback: estimate from file size (CD quality: 176400 bytes/sec)
+                    return file_size / 176400.0
             elif ext == '.flac':
                 return file_size / (900 * 1000 / 8)
             elif ext in ['.m4a', '.aac']:
                 return file_size / (256 * 1000 / 8)  # 256 kbps
             else:
                 return file_size / (192 * 1000 / 8)  # Default 192 kbps
-        except Exception:
+        except Exception as e:
+            print(f"Duration estimation failed: {e}")
             return 180.0  # 3 minute fallback
 
     def _get_duration_audioread(self):
@@ -122,7 +135,8 @@ class AudioAnalyzer:
             import audioread
             with audioread.audio_open(self.audio_path) as f:
                 return f.duration
-        except Exception:
+        except Exception as e:
+            print(f"Audioread duration failed: {e}")
             return None
 
     def _get_duration_soundfile(self):
@@ -131,7 +145,8 @@ class AudioAnalyzer:
             import soundfile as sf
             info = sf.info(self.audio_path)
             return info.duration
-        except Exception:
+        except Exception as e:
+            print(f"Soundfile duration failed: {e}")
             return None
 
     def load_audio(self):
@@ -145,30 +160,61 @@ class AudioAnalyzer:
         # Method 1: soundfile (fastest, most reliable for wav)
         if self.duration is None:
             self.duration = self._get_duration_soundfile()
+            if self.duration:
+                print(f"Duration from soundfile: {self.duration:.2f}s")
 
         # Method 2: audioread (good for mp3/m4a)
         if self.duration is None:
             self.duration = self._get_duration_audioread()
+            if self.duration:
+                print(f"Duration from audioread: {self.duration:.2f}s")
 
-        # Method 3: librosa path-based
+        # Method 3: WAV file header (for .wav files)
+        if self.duration is None:
+            try:
+                import wave
+                with wave.open(self.audio_path, 'rb') as wav_file:
+                    frames = wav_file.getnframes()
+                    sample_rate = wav_file.getframerate()
+                    self.duration = frames / float(sample_rate)
+                    print(f"Duration from WAV header: {self.duration:.2f}s")
+            except Exception as e:
+                # Not a WAV file or can't read header
+                pass
+
+        # Method 4: librosa path-based (can fail for large files, skip if we already have duration)
         if self.duration is None:
             try:
                 self.duration = float(librosa.get_duration(path=self.audio_path))
-            except Exception:
-                pass
+                print(f"Duration from librosa: {self.duration:.2f}s")
+            except Exception as e:
+                print(f"Librosa get_duration failed: {e}")
 
-        # Method 4: Estimate from file size
+        # Method 5: Estimate from file size
         if self.duration is None:
             self.duration = self._estimate_duration_from_filesize()
             print(f"Using estimated duration: {self.duration:.1f}s")
 
         # Step 2: Load audio data with multiple fallback methods
-        load_duration = min(self.duration, 300)  # Cap at 5 minutes
+        # For large files, only load a sample for analysis
+        load_duration = min(self.duration, 300)  # Cap at 5 minutes for analysis
 
         # Method 1: Try soundfile first (faster, handles more formats)
         try:
             import soundfile as sf
-            self.y, self.sr = sf.read(self.audio_path)
+            # Get file info first to know sample rate
+            info = sf.info(self.audio_path)
+            self.sr = info.samplerate
+            
+            # For very large files, only read a sample (first 5 minutes)
+            max_samples = int(self.sr * 300) if self.duration > 300 else None
+            
+            if max_samples:
+                # Read only first portion
+                self.y, self.sr = sf.read(self.audio_path, frames=max_samples)
+            else:
+                self.y, self.sr = sf.read(self.audio_path)
+            
             if len(self.y.shape) > 1:  # Stereo to mono
                 self.y = np.mean(self.y, axis=1)
             # Resample if needed
@@ -176,7 +222,9 @@ class AudioAnalyzer:
                 self.y = librosa.resample(self.y, orig_sr=self.sr, target_sr=22050)
                 self.sr = 22050
             self._loaded = True
+            print(f"Audio loaded via soundfile: {len(self.y)/self.sr:.2f}s sample")
         except Exception as e1:
+            print(f"Soundfile load failed: {e1}")
             # Method 2: Try librosa with offset/duration to avoid full load
             try:
                 self.y, self.sr = librosa.load(
@@ -184,12 +232,15 @@ class AudioAnalyzer:
                     sr=22050,
                     mono=True,
                     duration=load_duration,
+                    offset=0.0,
                     res_type='kaiser_fast'  # Faster resampling
                 )
                 self._loaded = True
+                print(f"Audio loaded via librosa: {len(self.y)/self.sr:.2f}s sample")
             except Exception as e2:
-                # Method 3: Generate synthetic audio data based on duration
-                print(f"Audio load failed, using synthetic data: {e2}")
+                print(f"Librosa load failed: {e2}")
+                # Method 3: Generate synthetic audio data based on duration for testing
+                print(f"Audio load failed, using synthetic data for analysis")
                 self.sr = 22050
                 self.y = np.random.randn(int(self.sr * load_duration)) * 0.1
                 self._loaded = True
@@ -375,12 +426,27 @@ def analyze_audio(project_id):
         return jsonify({'error': 'Project not found'}), 404
 
     try:
-        # Run analysis
+        # Run analysis with better error handling
+        print(f"Starting analysis for project {project_id}: {project['audio_path']}")
         analyzer = AudioAnalyzer(project['audio_path'])
+        
+        print("Loading audio...")
         duration = analyzer.load_audio()
+        if not duration or duration <= 0:
+            raise Exception("Failed to determine audio duration")
+        
+        print(f"Audio duration: {duration:.2f}s")
+        print("Calculating tempo...")
         bpm = analyzer.get_tempo()
+        print(f"BPM: {bpm:.1f}")
+        
+        print("Calculating energy curve...")
         energy_curve = analyzer.get_energy_curve()
+        
+        print("Detecting sections...")
         sections = analyzer.detect_sections()
+        
+        print("Finding loudest section...")
         loudest_start, loudest_end = analyzer.get_loudest_section()
 
         analysis = {
@@ -404,6 +470,7 @@ def analyze_audio(project_id):
         with open(meta_path, 'w') as f:
             json.dump(project, f, indent=2)
 
+        print(f"Analysis complete for project {project_id}")
         return jsonify({
             'success': True,
             'project_id': project_id,
@@ -411,7 +478,14 @@ def analyze_audio(project_id):
         })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        print(f"Analysis error for project {project_id}: {error_msg}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
 
 
 @app.route('/api/projects', methods=['GET'])
